@@ -59,7 +59,7 @@ export const formInfoData: Record<string, any> = {
   resumeImage: {
     label: '招呼语后发送图片简历',
     'data-help':
-      '高风险开关，默认关闭；需要先上传图片并开启自动投递。招呼语成功后通过 BOSS 图片消息发送，失败时停止后续岗位。',
+      '高风险开关，默认关闭；需要先上传图片并开启自动投递。AI/自定义招呼成功后，或两者停用时在系统默认招呼语后，通过 BOSS 图片消息发送；失败时停止后续岗位。',
   },
   greetingFallback: {
     label: 'AI招呼失败时使用兜底语',
