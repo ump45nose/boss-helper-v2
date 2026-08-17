@@ -110,4 +110,6 @@ export const bossWorkflow = defineTaskWorkflow<BossHelperCtx, BoosJobData>(
 
   tasks.customGreeting({ deps: ['岗位详情获取', '岗位投递', 'Boss信息获取'] }), // 自定义招呼语
   tasks.aiGreeting({ deps: ['岗位详情获取', '岗位投递', 'Boss信息获取'] }), // AI招呼语
+  // AI/自定义招呼均停用时，仍在 BOSS 系统默认招呼语后追加图片简历。
+  tasks.resumeImage({ deps: ['岗位详情获取', '岗位投递', 'Boss信息获取', '打招呼'] }),
 )
