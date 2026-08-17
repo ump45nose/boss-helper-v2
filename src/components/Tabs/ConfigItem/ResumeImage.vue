@@ -90,7 +90,7 @@ onMounted(() => {
       color="warning"
       variant="subtle"
       title="图片简历自动发送"
-      description="默认关闭。只有自动投递和本开关同时开启，招呼语成功后才会发送图片；图片仅保存在本机扩展 IndexedDB，不进入 AI、日志或配置导出。"
+      description="默认关闭。只有自动投递和本开关同时开启才会发送图片；AI/自定义招呼成功后发送，若两者停用则在 BOSS 系统默认招呼语后发送。图片仅保存在本机扩展 IndexedDB，不进入 AI、日志或配置导出。"
     />
     <UCheckbox
       v-bind="formInfoData.resumeImage"
