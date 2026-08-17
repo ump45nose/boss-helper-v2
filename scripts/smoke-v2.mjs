@@ -134,6 +134,12 @@ assert.ok(resumeImageSource.includes('counter.removeImage'), '图片简历缺少
 assert.ok(bossSource.includes('sendResumeImage'), '缺少图片简历发送流程')
 assert.ok(bossSource.includes('uploadImage'), '图片简历未复用 BOSS 图片上传链路')
 assert.ok(bossSource.includes('图片简历沿用消息发送的有界等待'), '图片简历发送缺少有界消息等待')
+assert.ok(applyingSource.includes('resumeImage = defineTaskHandler'), '缺少独立图片简历任务')
+assert.ok(
+  applyingSource.includes('系统默认招呼语后图片简历已自动发送'),
+  '系统默认招呼语路径缺少图片追加发送结果',
+)
+assert.ok(deliverySource.includes('tasks.resumeImage'), '岗位流程未挂载独立图片简历任务')
 assert.ok(bossSource.includes('iid: uploaded.iid ?? 0'), '图片消息缺少 BOSS 兼容 iid 占位')
 assert.ok(
   confSource.includes('data.resumeImage = { ...defaultFormData.resumeImage }'),
