@@ -32,7 +32,7 @@ export interface FormData {
   autoDelivery: FormDataCheckbox
   /** 默认关闭；开启后只记录受控的非敏感诊断摘要，强制保留凭据和聊天内容脱敏。 */
   diagnosticLogging: FormDataCheckbox
-  /** 默认关闭；开启后在招呼语发送成功后发送本机已上传的图片简历。 */
+  /** 默认关闭；招呼任务成功或系统默认招呼语完成后发送本机已上传的图片简历。 */
   resumeImage: FormDataResumeImage
   /** 默认关闭；AI 生成失败且尚未发送外部消息时使用的文本招呼语。 */
   greetingFallback: FormDataGreetingFallback
