@@ -73,3 +73,10 @@
 - 配置页新增实际等待策略说明，修正普通延迟默认值提示；未加入随机点击、滚动、输入轨迹或会话进出等拟人化事件。
 - `npm run check`、`npm run lint`、定向 `oxfmt --check`、`git diff --check`、`npm run build:chrome`、`npm run zip:chrome` 和 `npm run smoke:v2` 均通过；构建保留既有 Nuxt UI/EMPTY_IMPORT_META 非阻断警告。
 - 最新交付 ZIP SHA256 为 `B0C0C42634D298C1EDEAD62091048B147B18AE3BD545DA7C811C918FDFCF2ED6`；未使用真实账号投递或发送消息。
+
+## 2026-08-17 系统默认招呼语图片追加（已完成）
+
+- 已定位问题：图片发送依赖 AI/自定义招呼任务，两个任务停用时没有图片发送节点。
+- 已增加独立图片简历任务：AI/自定义招呼已发送图片时去重；两者停用时在岗位投递触发的 BOSS 系统默认招呼语后发送图片。
+- `npm run check`、`npm run lint`、定向 `oxfmt --check`、`git diff --check`、`npm run build:chrome`、`npm run zip:chrome` 和 `npm run smoke:v2` 均通过；构建保留既有 Nuxt UI/EMPTY_IMPORT_META 非阻断警告。
+- 最新交付 ZIP SHA256 为 `303F79BCF6FF4912395EFA303AA1AF448F5D68F6884B09F028139B450BEB038C`；未使用真实账号发送。
