@@ -645,6 +645,32 @@ export class TaskRegistry<C extends HelperContext<C, T, S>, T, S = {}> {
     { label: 'AI招呼语', state: 'ai', stateMsg: '生成招呼语中' },
   )
 
+  /** 在系统默认招呼语之后追加图片简历；已有招呼任务发送过图片时按状态幂等跳过。 */
+  resumeImage = defineTaskHandler<C, T, S>(
+    '图片简历',
+    (ctx) => {
+      if (!ctx.helper.conf.formData.resumeImage.enable) {
+        return
+      }
+      return async (ctx, data) => {
+        if (data.state.delivery?.resumeImageSent) {
+          // AI/自定义招呼任务已经发送过图片，避免同一岗位二次触达。
+          return
+        }
+        const result = await ctx.helper.sendResumeImage(data)
+        if (!result.sent) {
+          if (result.stop) ctx.helper.stop()
+          return taskResult.skip(`系统默认招呼语后${result.reason ?? '图片简历未发送'}`)
+        }
+        return {
+          status: 'success',
+          msg: '系统默认招呼语后图片简历已自动发送',
+        }
+      }
+    },
+    { label: '图片简历', state: 'request', stateMsg: '发送图片简历中' },
+  )
+
   amap = defineTaskHandler<C, T, S>('高德地图', (ctx) => {
     if (!ctx.helper.conf.formData.amap.enable) {
       return
