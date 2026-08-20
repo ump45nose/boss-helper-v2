@@ -9,7 +9,7 @@ import { getRootVue, useHookVueData, useHookVueFn } from '@/composables/useVue'
 import { run } from '@/index'
 import { counter, initCounter } from '@/message'
 import { FormDataInput } from '@/types/formData'
-import { delayWithJitter } from '@/utils'
+import { delayWithJitter, resolveDelayRange } from '@/utils'
 import elmGetter from '@/utils/elmGetter'
 import { logger } from '@/utils/logger'
 import { BOSS_HELPER_V2_DOM } from '@/utils/namespace'
@@ -329,7 +329,10 @@ export class BossHelperCtx extends HelperContext<BossHelperCtx, BoosJobData, {}>
 
       // 使用消息等待范围，避免多条文本/图片以完全固定节奏发送。
       await delayWithJitter(
-        this.conf.formData.delayRanges?.message ?? this.conf.formData.delayMessageSending,
+        resolveDelayRange(
+          this.conf.formData.delayRanges?.message,
+          this.conf.formData.delayMessageSending,
+        ),
       )
       await this.publishChatMessage(encoded, label)
       sentAny = true
@@ -389,7 +392,10 @@ export class BossHelperCtx extends HelperContext<BossHelperCtx, BoosJobData, {}>
       })
       // 图片简历沿用消息发送的有界等待；这里只控制消息节奏，不模拟点击、滚动或其他页面事件。
       await delayWithJitter(
-        this.conf.formData.delayRanges?.message ?? this.conf.formData.delayMessageSending,
+        resolveDelayRange(
+          this.conf.formData.delayRanges?.message,
+          this.conf.formData.delayMessageSending,
+        ),
       )
       await this.publishChatMessage(this.geek.msgBuilder.encode(image), '图片简历')
       data.state.delivery = { ...(data.state.delivery ?? {}), resumeImageSent: true }
@@ -621,7 +627,7 @@ export class BossHelperCtx extends HelperContext<BossHelperCtx, BoosJobData, {}>
                     key: 'delayDeliveryInterval',
                     fieldProps: {
                       label: '投递间隔',
-                      'data-help': '每个投递会在默认5秒附近有界随机等待（约4～6秒）',
+                      'data-help': '每个投递会在默认15秒附近有界随机等待（约12～18秒）',
                     },
                     inputNumberProps: {
                       min: 1,
