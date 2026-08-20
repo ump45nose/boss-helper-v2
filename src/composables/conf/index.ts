@@ -179,6 +179,28 @@ const FROM_VERSION: [string, (from: Partial<FormData>) => Partial<FormData>][] =
       return from
     },
   ],
+  [
+    '20260820',
+    (from) => {
+      // 将旧版默认 5 秒投递间隔升级为 15 秒；用户已自定义的值和范围不覆盖。
+      const legacyInterval = 5
+      const upgradedInterval = 15
+      const currentRanges = from.delayRanges
+      const range = currentRanges?.interval
+      const hasLegacyRange =
+        !range || (Number(range[0]) === legacyInterval && Number(range[1]) === legacyInterval)
+      if (hasLegacyRange && from.delayDeliveryInterval === legacyInterval) {
+        from.delayDeliveryInterval = upgradedInterval
+        if (currentRanges) {
+          from.delayRanges = {
+            ...currentRanges,
+            interval: [upgradedInterval, upgradedInterval, false],
+          }
+        }
+      }
+      return from
+    },
+  ],
 ]
 
 export const useConf = () => {

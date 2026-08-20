@@ -368,7 +368,8 @@ finalScore 必须是有限数字；无法确认岗位事实、画像事实或证
     enable: false,
   },
   delayDeliveryStarts: 3,
-  delayDeliveryInterval: 5,
+  // 默认岗位之间等待 15 秒，并在运行时按 ±20% 做有界随机抖动。
+  delayDeliveryInterval: 15,
   delayDeliveryPageNext: 60,
   delayMessageSending: 2,
   batchPause: {
@@ -381,9 +382,9 @@ finalScore 必须是有限数字；无法确认岗位事实、画像事实或证
   },
   delayRanges: {
     starts: [3, 3, false],
-    interval: [5, 5, false],
+    interval: [15, 15, false],
     pageNext: [60, 60, false],
     message: [2, 2, false],
   },
-  version: '20260809',
+  version: '20260820',
 }
