@@ -105,6 +105,10 @@ assert.ok(modelCommonSource.includes('DEFAULT_MODEL_TIMEOUT_MS = 120_000'), '模
 assert.ok(contextSource.includes('formatDiagnosticDetails'), '诊断日志缺少白名单脱敏')
 assert.ok(applyingIndexSource.includes('pauseTarget'), '缺少投递批次随机长等待阈值')
 assert.ok(utilsSource.includes('jitterRatio = 0.2'), '有界随机等待默认抖动未启用')
+assert.ok(utilsSource.includes('resolveDelayRange'), '页面延迟值与运行时范围缺少同步解析')
+assert.ok(infoSource.includes('delayDeliveryInterval: 15'), '投递间隔默认值未调整为 15 秒')
+assert.ok(infoSource.includes('interval: [15, 15, false]'), '投递间隔默认范围未调整为 15 秒')
+assert.ok(confSource.includes("'20260820'"), '旧投递间隔配置缺少 5 秒到 15 秒迁移')
 assert.ok(applyingIndexSource.includes('delayWithJitter('), '投递流程未使用有界随机等待')
 assert.ok(applyingIndexSource.includes('execution?.published'), '长等待计数缺少实际投递成功门槛')
 assert.ok(
