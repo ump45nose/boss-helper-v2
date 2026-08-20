@@ -2,7 +2,7 @@ import { shallowRef, ref } from 'vue'
 
 import { PipelineCacheManager } from '@/composables/usePipelineCache'
 import type { PipelineCacheItem, ProcessorType } from '@/types/pipelineCache'
-import { delayWithJitter } from '@/utils'
+import { delayWithJitter, resolveDelayRange } from '@/utils'
 
 import { HelperContext } from '../useHelper'
 import { RateLimitError } from './deliverError'
@@ -431,7 +431,10 @@ export async function useDeliveryWorkflow<C extends HelperContext<C, T, S>, T, S
         })
 
         await delayWithJitter(
-          helper.conf.formData.delayRanges?.starts ?? helper.conf.formData.delayDeliveryStarts,
+          resolveDelayRange(
+            helper.conf.formData.delayRanges?.starts,
+            helper.conf.formData.delayDeliveryStarts,
+          ),
           isStop,
         )
 
@@ -483,8 +486,10 @@ export async function useDeliveryWorkflow<C extends HelperContext<C, T, S>, T, S
           }
           if (!longPauseTriggered && !isStop()) {
             await delayWithJitter(
-              helper.conf.formData.delayRanges?.interval ??
+              resolveDelayRange(
+                helper.conf.formData.delayRanges?.interval,
                 helper.conf.formData.delayDeliveryInterval,
+              ),
               isStop,
             )
           }
@@ -492,8 +497,10 @@ export async function useDeliveryWorkflow<C extends HelperContext<C, T, S>, T, S
         if (isStop()) break
         const hasMore = await helper.loadMoreJob(
           delayWithJitter(
-            helper.conf.formData.delayRanges?.pageNext ??
+            resolveDelayRange(
+              helper.conf.formData.delayRanges?.pageNext,
               helper.conf.formData.delayDeliveryPageNext,
+            ),
             isStop,
           ),
         )
