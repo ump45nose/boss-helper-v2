@@ -65,6 +65,35 @@ export async function delay(s: number, isStopped?: () => boolean) {
 }
 
 /**
+ * 解析投递延迟配置，优先保留显式的最小/最大范围，并让页面上的单值输入即时生效。
+ * 旧版迁移会把固定延迟保存为 min=max；当用户修改页面单值后，应以该单值覆盖历史快照。
+ * @param configured 已保存的延迟范围或固定值
+ * @param scalar 页面当前显示的固定延迟秒数
+ * @returns 供有界随机等待使用的固定值或范围
+ */
+export function resolveDelayRange(
+  configured: number | readonly [number, number, boolean?] | undefined,
+  scalar: number,
+): number | readonly [number, number, boolean?] {
+  const fallback = Number(scalar)
+  if (!Array.isArray(configured)) {
+    return Number.isFinite(fallback) ? fallback : 0
+  }
+
+  const min = Number(configured[0])
+  const max = Number(configured[1])
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return Number.isFinite(fallback) ? fallback : 0
+  }
+
+  // 等值范围来自旧版固定延迟迁移；页面单值变化时不能继续使用旧快照。
+  if (min === max && Number.isFinite(fallback) && fallback !== min) {
+    return fallback
+  }
+  return configured
+}
+
+/**
  * 在原有等待时间附近增加有界随机抖动，降低固定节奏造成的误操作风险。
  * 这是保守限流，不绕过平台检测，也不改变任务顺序。
  */
