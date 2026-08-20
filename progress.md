@@ -80,3 +80,12 @@
 - 已增加独立图片简历任务：AI/自定义招呼已发送图片时去重；两者停用时在岗位投递触发的 BOSS 系统默认招呼语后发送图片。
 - `npm run check`、`npm run lint`、定向 `oxfmt --check`、`git diff --check`、`npm run build:chrome`、`npm run zip:chrome` 和 `npm run smoke:v2` 均通过；构建保留既有 Nuxt UI/EMPTY_IMPORT_META 非阻断警告。
 - 最新交付 ZIP SHA256 为 `303F79BCF6FF4912395EFA303AA1AF448F5D68F6884B09F028139B450BEB038C`；未使用真实账号发送。
+
+## 2026-08-20 岗位间隔扩大（已完成）
+
+- 用户要求不拆分新的动作间隔配置，仅将岗位之间的投递间隔扩大 3 倍。
+- 默认 `delayDeliveryInterval` 从 5 秒调整为 15 秒；运行时继续按 ±20% 有界随机等待，实际约 12–18 秒。
+- 新增 `20260820` 配置迁移：仅将未自定义的旧 5 秒标量/等值范围升级为 15 秒，保留用户自定义范围。
+- 新增延迟范围解析，页面修改标量后不会继续使用旧的 `min=max` 快照；图片/消息发送仍使用原 2 秒等待，批次长等待不变。
+- `npm run check`、`npm run lint`、定向 `oxfmt --check`、`git diff --check`、`npm run build:chrome`、`npm run zip:chrome` 和 `npm run smoke:v2` 均通过；全仓 `oxfmt --check` 仍仅因 `.claude/skills` 等既有文档未格式化而失败。
+- 交付 ZIP SHA256 为 `E25FA2848B817F8780EF6FD72651F27359AE94025E488E6AEDCDF949BF92B5BE`；未进行真实 BOSS 投递或图片发送。
