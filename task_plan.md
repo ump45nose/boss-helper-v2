@@ -68,3 +68,5 @@
 | WXT prepare 阶段 counter 未初始化诊断      | 每次构建 | 不影响构建产物；运行时由 content adapter 初始化，已记录在冒烟报告           |
 | PowerShell 输出完整大 diff 超时            |        1 | 改用分文件定向检查与静态冒烟，未重复执行大输出命令                          |
 | PowerShell 冲突汇总管道语法错误            |        1 | 先收集对象数组，再单独传给 `Format-Table`，避免在 `foreach` 后直接接管道    |
+| 试装上游依赖时缺少 `zod`                   |        1 | 不改变已完成的 V2 冲突取舍；恢复现有 `package.json` 依赖集并重新顺序安装    |
+| 初始化 `devlog-ui` 后根类型检查扫描其测试  |        1 | 根 `tsconfig` 排除独立子模块；V2 继续使用自身的强制脱敏日志实现             |

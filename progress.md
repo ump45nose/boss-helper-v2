@@ -102,3 +102,6 @@
 - 已合并 `upstream/main` 并解决 22 个冲突：V2 冲突侧优先保留独立命名空间、默认关闭投递、图片简历、强制日志脱敏、随机等待和模型超时分类；吸收上游 `FormRange` 组件重命名、可选头像贴纸判空、内容脚本 `heartbeatTimeout` 和工程配置。
 - 上游新增的严格 type-only import lint 规则会让既有 V2 基线成为阻断错误，已降为非阻断以维持 V2 已验证的编译配置；其余 lint 仅保留既有 warning。
 - `npm run check`、`npm run lint`、`npm run build:chrome`、`npm run zip:chrome` 和 `npm run smoke:v2` 均通过。根目录 ZIP 已更新，SHA256 为 `18AD84B3AE1C7FE1EE9465470641CFAC55D5318847CBD7A397C5103CECF942A9`；未进行真实 BOSS 投递或消息发送。
+- 复核依赖锁时曾试装上游完整依赖集，但 WXT prepare 因其未显式声明 AI SDK 的 `zod` peer 依赖失败；安装事务已回滚 `package.json`，继续沿用已通过回归的 V2 兼容依赖取舍并重建本机依赖。
+- 初始化上游 `devlog-ui` 子模块后，根类型检查误扫描其测试源码并因子模块测试依赖未安装而失败；根 `tsconfig` 已明确排除该独立子模块，避免未启用的上游日志包污染 V2 编译边界。
+- 排除子模块后重新执行 `npm run check`、`npm run lint`、`npm run build:chrome` 与 `npm run smoke:v2` 均通过；lint 仍只有既有 warning，Chrome 构建仍只有既有 Nuxt UI `EMPTY_IMPORT_META` 非阻断警告。

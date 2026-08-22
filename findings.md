@@ -105,3 +105,4 @@
 - 冲突解决以 V2 的安全语义为准：不回退独立 namespace、自动投递默认关闭、图片简历、强制日志脱敏、有界随机等待、模型超时分类或 fail-closed 守卫；上游未冲突修改仍随 merge 保留。
 - 吸收了 `Form/SalaryRange.vue` 到 `FormRange.vue` 的重命名、头像贴纸字段可选判空和 content proxy 的 3 秒心跳保护。
 - 上游 `devlog-ui` 工作流类型和 `verbatimModuleSyntax` 需要其子模块及全仓 import 风格迁移，直接启用会使 V2 基线大量编译失败；保留上游工程文件但将两条严格 import 样式 lint 规则关闭，避免把无功能影响的风格迁移变成发布阻断。
+- 上游 `packages/devlog-ui` 是独立子模块；V2 保留自身强制脱敏日志且不引用该包，因此根 `tsconfig` 必须排除该目录，否则完整初始化子模块后会误扫描其测试源码并要求额外测试依赖。
