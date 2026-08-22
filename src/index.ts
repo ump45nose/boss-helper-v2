@@ -29,38 +29,42 @@ export async function run<C extends HelperContext<C, T, S>, T, S>(ctx: HelperCon
     ;(root as any)._vueApp = app
   }
 
-  customElements.define(
-    BOSS_HELPER_V2_DOM.job,
-    class extends HTMLElement {
-      connectedCallback() {
-        _connectedCallback(this, App)
-      }
-      disconnectedCallback() {
-        // 完美卸载的关键：清理 Vue 实例
-        const app = (this as any)._vueApp
-        if (app) {
-          app.unmount()
-          ;(this as any)._vueApp = null
+  if (!customElements.get(BOSS_HELPER_V2_DOM.job)) {
+    customElements.define(
+      BOSS_HELPER_V2_DOM.job,
+      class extends HTMLElement {
+        connectedCallback() {
+          _connectedCallback(this, App)
         }
-      }
-    },
-  )
+        disconnectedCallback() {
+          // 完美卸载的关键：清理 Vue 实例
+          const app = (this as any)._vueApp
+          if (app) {
+            app.unmount()
+            ;(this as any)._vueApp = null
+          }
+        }
+      },
+    )
+  }
 
-  customElements.define(
-    BOSS_HELPER_V2_DOM.menu,
-    class extends HTMLElement {
-      connectedCallback() {
-        _connectedCallback(this, AppMenu)
-      }
-      disconnectedCallback() {
-        // 完美卸载的关键：清理 Vue 实例
-        const app = (this as any)._vueApp
-        if (app) {
-          app.unmount()
-          ;(this as any)._vueApp = null
+  if (!customElements.get(BOSS_HELPER_V2_DOM.menu)) {
+    customElements.define(
+      BOSS_HELPER_V2_DOM.menu,
+      class extends HTMLElement {
+        connectedCallback() {
+          _connectedCallback(this, AppMenu)
         }
-      }
-    },
-  )
+        disconnectedCallback() {
+          // 完美卸载的关键：清理 Vue 实例
+          const app = (this as any)._vueApp
+          if (app) {
+            app.unmount()
+            ;(this as any)._vueApp = null
+          }
+        }
+      },
+    )
+  }
   await ctx.onMount()
 }

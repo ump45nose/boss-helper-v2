@@ -137,6 +137,8 @@ export async function useDeliveryWorkflow<C extends HelperContext<C, T, S>, T, S
     '高德地图',
     'AI筛选',
   ])
+  // 在 rebuild 完成前先占用启动权，避免连续点击在异步间隙创建并行批次。
+  let isStarting = false
 
   const rebuild = async () => {
     const _ctx: TaskContext<C, T, S> = { helper, now: new Date() }
@@ -391,12 +393,14 @@ export async function useDeliveryWorkflow<C extends HelperContext<C, T, S>, T, S
   }
 
   const executeAll = async (rawDataMap: Map<string, T>) => {
-    await rebuild()
+    if (isStarting || status.value === 'running') {
+      logger.warn('投递任务已在运行，忽略重复启动')
+      return
+    }
+    isStarting = true
 
     let stepMsg = ''
     errorMessage.value = null
-    status.value = 'running'
-    const isStop = () => status.value === 'stop'
     // 只统计本次工作流实际完成“岗位投递”的成功次数，避免异步统计写入滞后影响长等待和每日上限。
     const startingSuccess = helper.statistics.todayData.success
     let sessionPublished = 0
@@ -412,6 +416,9 @@ export async function useDeliveryWorkflow<C extends HelperContext<C, T, S>, T, S
       Math.max(helper.statistics.todayData.success, startingSuccess + sessionPublished)
 
     try {
+      await rebuild()
+      status.value = 'running'
+      const isStop = () => status.value === 'stop'
       while (status.value === 'running') {
         if (helper.jobList.value.length === 0) {
           stepMsg = '没有职位可投递'
@@ -438,7 +445,9 @@ export async function useDeliveryWorkflow<C extends HelperContext<C, T, S>, T, S
           isStop,
         )
 
-        for (const [index, jobData] of helper.jobList.value.entries()) {
+        // 页面翻页时会替换响应式列表；本页使用快照，避免遍历期间跳过或重复职位。
+        const currentPage = [...helper.jobList.value]
+        for (const [index, jobData] of currentPage.entries()) {
           current.value = index + 1
           if (isStop()) break
           if (cooldownUntil > Date.now()) {
@@ -453,9 +462,17 @@ export async function useDeliveryWorkflow<C extends HelperContext<C, T, S>, T, S
           if (jobStatus === 'success' || jobStatus === 'warn') {
             continue
           }
+          const rawData = rawDataMap.get(jobData.key)
+          if (!rawData) {
+            helper.jobResultMaps.set(jobData.key, {
+              status: 'error',
+              msg: '职位原始数据已过期，请刷新页面后重试',
+            })
+            continue
+          }
           const data = {
             jobData,
-            rawData: rawDataMap.get(jobData.key)!,
+            rawData,
             state: stateMaps.value.get(jobData.key) || {},
           }
           helper.jobMaps.set(jobData.key, data)
@@ -514,6 +531,7 @@ export async function useDeliveryWorkflow<C extends HelperContext<C, T, S>, T, S
       logger.error(e)
       stepMsg = `未知错误: ${e}`
     } finally {
+      isStarting = false
       if (!stepMsg) {
         stepMsg = '投递结束'
         status.value = 'pending'

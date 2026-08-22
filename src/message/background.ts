@@ -11,6 +11,38 @@ export const userKey = v2StorageKey('conf-user')
 const DB_NAME = 'BossHelperV2DB'
 const STORE_NAME = 'images'
 
+const ALLOWED_HOSTS = new Set(['zhipin.com'])
+const ALLOWED_REQUEST_FIELDS = new Set(['method', 'headers', 'body', 'referrerPolicy'])
+
+/** 只允许招聘站点的 HTTP(S) 请求，防止消息代理被用作任意 URL 代理。 */
+function assertAllowedUrl(value: string): URL {
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    throw new Error('请求地址无效')
+  }
+  const isAllowedHost = ALLOWED_HOSTS.has(url.hostname) || url.hostname.endsWith('.zhipin.com')
+  if (!['http:', 'https:'].includes(url.protocol) || !isAllowedHost) {
+    throw new Error('请求地址不在允许范围内')
+  }
+  return url
+}
+
+/** 校验跨消息边界传入的 RequestInit，仅接受当前业务实际需要的字段。 */
+function validateRequestInit(data: RequestInit): RequestInit {
+  if (!data || typeof data !== 'object') throw new Error('请求参数无效')
+  for (const key of Object.keys(data)) {
+    if (!ALLOWED_REQUEST_FIELDS.has(key)) throw new Error(`不支持的请求字段: ${key}`)
+  }
+  const method = String(data.method ?? 'GET').toUpperCase()
+  if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'].includes(method)) {
+    throw new Error('请求方法不允许')
+  }
+  if (data.headers && typeof data.headers !== 'object') throw new Error('请求头参数无效')
+  return { method, headers: data.headers, body: data.body, referrerPolicy: data.referrerPolicy }
+}
+
 async function initDB() {
   return openDB(DB_NAME, 1, {
     upgrade(db) {
@@ -28,17 +60,23 @@ export class BackgroundCounter {
     timeout: number
     responseType: ResponseType
   }) {
+    const url = assertAllowedUrl(args.url)
+    const data = validateRequestInit(args.data)
+    if (!Number.isFinite(args.timeout) || args.timeout <= 0 || args.timeout > 120) {
+      throw new Error('请求超时时间无效')
+    }
     const signal = AbortSignal.timeout(args.timeout * 1000)
 
-    const res = await fetch(args.url, {
-      ...args.data,
+    const res = await fetch(url, {
+      ...data,
       signal,
       mode: 'cors',
       credentials: 'include',
     }).then(async (res) => {
       if (!res.ok || res.status >= 400) {
-        const errorText = await res.text()
-        throw new Error(`状态码: ${res.status}: ${errorText}`)
+        // 错误正文可能含 Cookie、手机号等敏感信息，不写入日志或错误字符串。
+        await res.body?.cancel()
+        throw new Error(`状态码: ${res.status}`)
       }
 
       const result = args.responseType === 'json' ? await res.json() : await res.text()
@@ -66,7 +104,12 @@ export class BackgroundCounter {
   }
 
   async fetch(...args: Parameters<typeof fetch>) {
-    return await fetch(...args)
+    const [input, init] = args
+    const requestUrl =
+      typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+    const url = assertAllowedUrl(requestUrl)
+    const data = validateRequestInit(init ?? {})
+    return await fetch(url, data)
   }
   async getImage(key: string): Promise<
     | { success: false }

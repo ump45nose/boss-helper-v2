@@ -9,6 +9,8 @@ const matches = ['*://zhipin.com/*', '*://*.zhipin.com/*']
 
 export default defineConfig({
   srcDir: 'src',
+  // 使用非隐藏目录，便于直接在 Chrome 开发者模式和商店发布流程中访问构建产物。
+  outDir: 'output',
   outDirTemplate: '{{browser}}-mv{{manifestVersion}}',
   modules: ['@wxt-dev/module-vue'],
   // imports: false,
@@ -117,9 +119,13 @@ export default defineConfig({
         matches,
       },
     ],
-    host_permissions: ['http://*/*', 'https://*/*'],
-    // 独立生成的 Manifest 公钥；不复用官方扩展 key，私钥不进入仓库。
-    key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt979f9VUrRMPafEh1cEV3VWUjgR92/Ziu1O58UWl5pD9SJF02QFnNrcLmDSENZivKYSCkLsp1tBFFYCyTmeADKzr+ffeUeOPec4KFoHPF/bwxEXQnm3xzhh56MueNZsY+y+dO3DgD34hZF6dzztlONb05N+xD+znVT/dYFEN4mpZ300G42Bju3bh2QJo9XMNKIxNdZx+MkSUV5DKwOQlhCY2opnT/sCn5Dvs+FafK1j3u/+q4icwYw7N1/WVL9F2U29HNOZjjLoImUKmBkTPmqltIsvyu9HcfSR5qqgaxKnKkmObBSmnMV/eBcstsj96w0CQdM+PEh7Pe+0Z/rLM+wIDAQAB',
+    // 后台请求代理只服务于招聘站点，避免向任意互联网地址授予 host 权限。
+    host_permissions: [
+      'http://zhipin.com/*',
+      'https://zhipin.com/*',
+      'http://*.zhipin.com/*',
+      'https://*.zhipin.com/*',
+    ],
     browser_specific_settings:
       browser == 'firefox'
         ? {

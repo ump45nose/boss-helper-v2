@@ -175,36 +175,72 @@ async function deliverGreeting<C extends HelperContext<C, T, S>, T, S>(
 }
 
 export class TaskRegistry<C extends HelperContext<C, T, S>, T, S = {}> {
+  /**
+   * 按“存储键 + 用户”缓存已成功沟通的实体 ID，保证同一批次内立即去重。
+   */
+  private readonly duplicateIds = new Map<string, Set<string>>()
+
+  /**
+   * 从持久化存储加载指定用户的去重集合，并在本次工作流中复用同一内存实例。
+   */
+  private async getDuplicateIds(storageKey: string, uid: string): Promise<Set<string>> {
+    const cacheKey = `${storageKey}:${uid}`
+    const cached = this.duplicateIds.get(cacheKey)
+    if (cached) return cached
+
+    const data = await counter.storageGet<Record<string, string[]>>(storageKey, {})
+    const ids = new Set(data[uid] ?? [])
+    this.duplicateIds.set(cacheKey, ids)
+    return ids
+  }
+
+  /**
+   * 在投递请求明确成功后记录公司或 HR，避免筛选通过但投递失败时误去重。
+   */
+  async recordSuccessfulDelivery(
+    ctx: TaskContext<C, T, S>,
+    ids: { brandId?: string; bossId?: string },
+  ): Promise<void> {
+    const records: Array<Promise<void>> = []
+    if (ctx.helper.conf.formData.sameCompanyFilter.value && ids.brandId) {
+      records.push(this.recordDuplicateId(sameCompanyKey, ctx.helper.uid, ids.brandId))
+    }
+    if (ctx.helper.conf.formData.sameHrFilter.value && ids.bossId) {
+      records.push(this.recordDuplicateId(sameHrKey, ctx.helper.uid, ids.bossId))
+    }
+    await Promise.all(records)
+  }
+
+  /**
+   * 立即合并并持久化单个实体 ID；存储失败会让投递任务失败，以免默默失去幂等保护。
+   */
+  private async recordDuplicateId(storageKey: string, uid: string, id: string): Promise<void> {
+    const ids = await this.getDuplicateIds(storageKey, uid)
+    if (ids.has(id)) return
+
+    ids.add(id)
+    const data = await counter.storageGet<Record<string, string[]>>(storageKey, {})
+    await counter.storageSet(storageKey, {
+      ...data,
+      [uid]: Array.from(ids),
+    })
+  }
+
   SameCompanyFilter = defineTaskHandler<C, T, S>(
     '重复沟通-相同公司',
     async (ctx) => {
       if (!ctx.helper.conf.formData.sameCompanyFilter.value) {
         return
       }
-      const someSet = new Set<string>()
-      const data = await counter.storageGet<Record<string, string[]>>(sameCompanyKey, {})
-      for (const id of data[ctx.helper.uid] ?? []) {
-        someSet.add(id)
-      }
+      const someSet = await this.getDuplicateIds(sameCompanyKey, ctx.helper.uid)
       return {
-        fn: async (_, { jobData: data }) => {
-          if (data.key && someSet.has(data.key)) {
+        fn: async (_, { rawData }) => {
+          // 公司维度必须使用品牌 ID，职位 ID 只能防止同一职位重复投递。
+          const brandId = (rawData as { jobitem?: { encryptBrandId?: string } }).jobitem?.encryptBrandId
+          if (brandId && someSet.has(brandId)) {
             return taskResult.skip('相同公司已投递')
           }
         },
-        after: [
-          async (ctx, { jobData: data }) => {
-            if (!data.key) return
-            someSet.add(data.key)
-            if (someSet.size % 3 === 0) {
-              const oldData = await counter.storageGet<Record<string, string[]>>(sameCompanyKey, {})
-              await counter.storageSet(sameCompanyKey, {
-                ...oldData,
-                [ctx.helper.uid]: Array.from(someSet ?? []),
-              })
-            }
-          },
-        ],
       }
     },
     { label: '相同公司' },
@@ -216,31 +252,16 @@ export class TaskRegistry<C extends HelperContext<C, T, S>, T, S = {}> {
       if (!ctx.helper.conf.formData.sameHrFilter.value) {
         return
       }
-      const someSet = new Set<string>()
-      const data = await counter.storageGet<Record<string, string[]>>(sameHrKey, {})
-      for (const id of data[ctx.helper.uid] ?? []) {
-        someSet.add(id)
-      }
+      const someSet = await this.getDuplicateIds(sameHrKey, ctx.helper.uid)
 
       return {
-        fn: async (_, { jobData: data }) => {
-          if (data.key != null && someSet.has(data.key)) {
+        fn: async (_, { rawData }) => {
+          // HR 维度必须使用招聘者 ID，不能复用职位 ID。
+          const bossId = (rawData as { jobitem?: { encryptBossId?: string } }).jobitem?.encryptBossId
+          if (bossId && someSet.has(bossId)) {
             return taskResult.skip('相同hr已投递')
           }
         },
-        after: [
-          async (ctx, { jobData: data }) => {
-            if (!data.key) return
-            someSet.add(data.key)
-            if (someSet.size % 3 === 0) {
-              const oldData = await counter.storageGet<Record<string, string[]>>(sameHrKey, {})
-              await counter.storageSet(sameHrKey, {
-                ...oldData,
-                [ctx.helper.uid]: Array.from(someSet ?? []),
-              })
-            }
-          },
-        ],
       }
     },
     { label: '相同HR' },

@@ -72,28 +72,47 @@ export const bossWorkflow = defineTaskWorkflow<BossHelperCtx, BoosJobData>(
   tasks.amap({ deps: ['岗位详情获取'] }), // 高德地图
   tasks.aiFiltering({ deps: ['岗位详情获取'] }), // AI过滤
 
-  defineTaskHandler('岗位投递', (ctx) => async (_, { rawData, state }) => {
-    if (!ctx.helper.conf.formData.autoDelivery.value) {
-      return taskResult.skip('自动投递未开启，请在配置中明确开启后重试')
-    }
-    if (state.delivery?.jobPublished) {
-      return {
-        status: 'success',
-        msg: '岗位已投递，跳过重复请求',
-        delivered: false,
-      }
-    }
-    await sendPublishReq({
-      securityId: rawData.jobitem.securityId,
-      encryptJobId: rawData.jobitem.encryptJobId,
-    })
-    state.delivery = { ...(state.delivery ?? {}), jobPublished: true }
-    return {
-      status: 'success',
-      msg: '投递成功',
-      delivered: true,
-    }
-  }), // 投递
+  defineTaskHandler(
+    '岗位投递',
+    (ctx) => ({
+      /**
+       * 发送岗位沟通请求；只有接口成功返回后才允许执行去重登记。
+       */
+      fn: async (_, { rawData, state }) => {
+        if (!ctx.helper.conf.formData.autoDelivery.value) {
+          return taskResult.skip('自动投递未开启，请在配置中明确开启后重试')
+        }
+        if (state.delivery?.jobPublished) {
+          return {
+            status: 'success',
+            msg: '岗位已投递，跳过重复请求',
+            delivered: false,
+          }
+        }
+        await sendPublishReq({
+          securityId: rawData.jobitem.securityId,
+          encryptJobId: rawData.jobitem.encryptJobId,
+        })
+        state.delivery = { ...(state.delivery ?? {}), jobPublished: true }
+        return {
+          status: 'success',
+          msg: '投递成功',
+          delivered: true,
+        }
+      },
+      after: [
+        /**
+         * 把已成功投递的真实公司和 HR ID 持久化，供后续职位筛选立即使用。
+         */
+        async (ctx, { rawData }) => {
+          await tasks.recordSuccessfulDelivery(ctx, {
+            brandId: rawData.jobitem.encryptBrandId,
+            bossId: rawData.jobitem.encryptBossId,
+          })
+        },
+      ],
+    }),
+  ), // 投递
 
   defineTaskHandler('Boss信息获取', () => async (ctx, { rawData }) => {
     // await sendPublishReq({

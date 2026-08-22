@@ -55,4 +55,12 @@ export class GeekChatClientManager {
       wt,
     })
   }
+
+  /**
+   * 关闭当前 MQTT 连接，避免路由重挂载时遗留多个聊天客户端。
+   */
+  async disconnect(): Promise<void> {
+    if (!this.client) return
+    await new Promise<void>((resolve) => this.client.end(true, {}, resolve))
+  }
 }

@@ -126,10 +126,17 @@ function convertBossZpJobItemToJobData(item: BossZpJobItemData): JobData {
 
 export class BossHelperCtx extends HelperContext<BossHelperCtx, BoosJobData, {}> {
   private static instance: HTMLElement | null = null
+  /** 页面数据 hook 的解除函数，路由切换时必须恢复目标站点原始字段。 */
+  private pageHookCleanups: Array<() => void> = []
+  /** 外观监听的解除函数，防止切换页面后重复修改旧 DOM。 */
+  private appearanceWatchStop: (() => void) | null = null
+  /** 当前已绑定的路由和进行中的挂载任务，防止异步路由回调并发重挂载。 */
+  private mountedPath: string | null = null
+  private mountPromise: Promise<void> | null = null
   label = 'Boss直聘'
   key = 'boss'
 
-  geek!: GeekChatClientManager
+  geek: GeekChatClientManager | null = null
 
   _page = ref({ page: 1, pageSize: 15 })
   _pageHasMore = ref(true)
@@ -251,7 +258,7 @@ export class BossHelperCtx extends HelperContext<BossHelperCtx, BoosJobData, {}>
         reject(new Error(`BOSS ${label}发送确认超时`))
       }, 10_000)
       // 聊天消息不能作为 MQTT retained message 留在 topic，避免页面重连后重复展示/触达。
-      this.geek.client.publish('chat', encoded, { qos: 1, retain: false }, (error) => {
+      this.geek!.client.publish('chat', encoded, { qos: 1, retain: false }, (error) => {
         if (settled) return
         settled = true
         window.clearTimeout(timer)
@@ -407,56 +414,98 @@ export class BossHelperCtx extends HelperContext<BossHelperCtx, BoosJobData, {}>
     }
   }
 
-  async onMount(path?: string) {
-    if (!path) {
-      path = this.rootVue.$route.path
-    }
+  /**
+   * 绑定当前路由的职位页面；同一路由复用挂载结果，不同路由先释放旧页面资源。
+   */
+  async onMount(path = this.rootVue.$route.path) {
+    if (this.mountPromise) return this.mountPromise
+    if (this.mountedPath === path && BossHelperCtx.instance?.isConnected) return
 
+    const mount = this.mountPage(path)
+    this.mountPromise = mount
     try {
-      if (await elmGetter.get(BOSS_HELPER_V2_DOM.job, 3000)) {
-        return
-      }
-    } catch {}
-
-    if (BossHelperCtx.instance) {
-      BossHelperCtx.instance.remove()
-      BossHelperCtx.instance = null
+      await mount
+    } finally {
+      if (this.mountPromise === mount) this.mountPromise = null
     }
-    // TODO: 移除menu, 可能导致nuxtui实例冲突
-    // if (!document.querySelector('boss-helper-menu')) {
-    //   const menuElement = document.createElement('boss-helper-menu')
-    //   document.body.appendChild(menuElement)
-    // }
-    const elm = await elmGetter.get(
-      '.job-search-wrapper,.job-recommend-main,.page-jobs .page-jobs-main',
-    )
+  }
 
-    const appElement = document.createElement(BOSS_HELPER_V2_DOM.job)
-    BossHelperCtx.instance = appElement
-    elm.insertBefore(appElement, elm.firstChild)
-    removeAd()
+  /**
+   * 执行一次页面挂载，并将页面特有的 hook、监听和自定义元素纳入同一生命周期。
+   */
+  private async mountPage(path: string): Promise<void> {
+    await this.disposePageBindings()
+    try {
+      // TODO: 移除menu, 可能导致nuxtui实例冲突
+      // if (!document.querySelector('boss-helper-menu')) {
+      //   const menuElement = document.createElement('boss-helper-menu')
+      //   document.body.appendChild(menuElement)
+      // }
+      const elm = await elmGetter.get(
+        '.job-search-wrapper,.job-recommend-main,.page-jobs .page-jobs-main',
+      )
 
-    await this._initPage()
-    await this._initPageChange()
-    await this._initJobDetail()
-    await this._initClickJobCardAction()
-    await this._initJobList()
+      const appElement = document.createElement(BOSS_HELPER_V2_DOM.job)
+      BossHelperCtx.instance = appElement
+      elm.insertBefore(appElement, elm.firstChild)
+      this.mountedPath = path
+      removeAd()
 
-    this.initNetConf()
-    const contentElm = elm.querySelector<HTMLDivElement>('.recommend-result-inner')
-    this.geek = new GeekChatClientManager()
-    await this.geek.connect()
-    watch(
-      appearanceConf.value,
-      (v) => {
-        if (!contentElm) return
-        contentElm.style.marginRight =
-          v.leftChat && v.contentOffset != 25 ? `${v.contentOffset}%` : 'auto'
-        contentElm.style.marginLeft =
-          !v.leftChat && v.contentOffset != 25 ? `${v.contentOffset}%` : 'auto'
-      },
-      { immediate: true },
-    )
+      await this._initPage()
+      await this._initPageChange()
+      await this._initJobDetail()
+      await this._initClickJobCardAction()
+      await this._initJobList()
+
+      this.initNetConf()
+      const contentElm = elm.querySelector<HTMLDivElement>('.recommend-result-inner')
+      if (!this.geek) {
+        try {
+          const chat = new GeekChatClientManager()
+          await chat.connect()
+          this.geek = chat
+        } catch (error) {
+          // 聊天是附加能力，连接失败不能阻断岗位筛选和投递。
+          logger.error('聊天服务连接失败，已降级为仅投递模式', error)
+        }
+      }
+      this.appearanceWatchStop = watch(
+        appearanceConf.value,
+        (v) => {
+          if (!contentElm) return
+          contentElm.style.marginRight =
+            v.leftChat && v.contentOffset != 25 ? `${v.contentOffset}%` : 'auto'
+          contentElm.style.marginLeft =
+            !v.leftChat && v.contentOffset != 25 ? `${v.contentOffset}%` : 'auto'
+        },
+        { immediate: true },
+      )
+    } catch (error) {
+      // 任一页面字段绑定失败都回滚已经挂载的元素和 setter，允许后续路由重试。
+      await this.disposePageBindings()
+      throw error
+    }
+  }
+
+  /**
+   * 释放路由绑定资源，并停止正在使用旧页面数据的投递流程。
+   */
+  private async disposePageBindings(): Promise<void> {
+    this.workflow?.stop()
+    this.appearanceWatchStop?.()
+    this.appearanceWatchStop = null
+    for (const cleanup of this.pageHookCleanups.splice(0)) cleanup()
+    if (this.geek) {
+      try {
+        await this.geek.disconnect()
+      } catch (error) {
+        logger.error('聊天服务关闭失败', error)
+      }
+      this.geek = null
+    }
+    BossHelperCtx.instance?.remove()
+    BossHelperCtx.instance = null
+    this.mountedPath = null
   }
   getConfigItems() {
     const conf = useConf()
@@ -696,13 +745,23 @@ export class BossHelperCtx extends HelperContext<BossHelperCtx, BoosJobData, {}>
     }
     this._clickJobCardAction(job.rawData.jobitem)
     const detail = await new Promise<BossZpDetailData>((resolve, reject) => {
-      setTimeout(() => {
-        reject(new Error('bossZpDetailData获取超时'))
+      let settled = false
+      const cleanup = () => {
+        clearTimeout(timeout)
+        clearInterval(interval)
+      }
+      const finish = (callback: () => void) => {
+        if (settled) return
+        settled = true
+        cleanup()
+        callback()
+      }
+      const timeout = setTimeout(() => {
+        finish(() => reject(new Error('bossZpDetailData获取超时')))
       }, 1000 * 60)
       const interval = setInterval(() => {
         if (this._jobDetail.value && this._jobDetail.value.lid === job.rawData.jobitem.lid) {
-          resolve(this._jobDetail.value)
-          clearInterval(interval)
+          finish(() => resolve(this._jobDetail.value!))
         }
       }, 100)
     })
@@ -731,7 +790,7 @@ export class BossHelperCtx extends HelperContext<BossHelperCtx, BoosJobData, {}>
     this.jobMaps.set(key, job)
   }
   async _initJobList() {
-    useHookVueData(
+    const cleanup = await useHookVueData(
       '#wrap .page-job-wrapper,.job-recommend-main,.page-jobs-main',
       'jobList',
       this._jobList,
@@ -778,27 +837,31 @@ export class BossHelperCtx extends HelperContext<BossHelperCtx, BoosJobData, {}>
         })
       },
     )()
+    this.pageHookCleanups.push(cleanup)
   }
 
   async _initPage() {
-    await useHookVueData(
+    const pageCleanup = await useHookVueData(
       '#wrap .page-job-wrapper,.job-recommend-main,.page-jobs-main',
       'pageVo',
       this._page,
     )()
-    await useHookVueData(
+    this.pageHookCleanups.push(pageCleanup)
+    const hasMoreCleanup = await useHookVueData(
       '#wrap .page-job-wrapper,.job-recommend-main,.page-jobs-main',
       'hasMore',
       this._pageHasMore,
     )()
+    this.pageHookCleanups.push(hasMoreCleanup)
   }
 
   async _initJobDetail() {
-    await useHookVueData(
+    const cleanup = await useHookVueData(
       '#wrap .page-job-wrapper,.job-recommend-main,.page-jobs-main',
       'jobDetail',
       this._jobDetail,
     )()
+    this.pageHookCleanups.push(cleanup)
   }
 
   async _initPageChange() {
@@ -884,7 +947,9 @@ export default defineUnlistedScript(async () => {
       fullPath: string
     }) => {
       // hookChatSocket()
-      bossHelpCtx.onMount(to.path)
+      void bossHelpCtx.onMount(to.path).catch((error) => {
+        logger.error('路由页面初始化失败', error)
+      })
     },
   )
 

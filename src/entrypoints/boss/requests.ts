@@ -49,13 +49,20 @@ export async function getJobDetail(params: { securityId: string; lid: string }):
   }).then((r) => r.json())
 }
 
+/**
+ * 投递 Boss 沟通请求，并在安全的临时故障下有限重试。
+ * @param data 投递所需的职位安全标识和加密职位 ID
+ * @param errorMsg 上一次临时失败的错误信息
+ * @param retries 剩余重试次数；同时限制 120 限额确认后的再次投递
+ * @param _params 追加到请求查询参数的值（例如限额确认后的 cid）
+ */
 export async function sendPublishReq(
   data: { securityId: string; encryptJobId: string },
   errorMsg?: string,
   retries = 3,
   _params = {},
 ) {
-  if (retries === 0) {
+  if (retries <= 0) {
     throw new PublishError(errorMsg ?? '重试多次失败')
   }
   const url = new URL('https://www.zhipin.com/wapi/zpgeek/friend/add.json')
@@ -74,10 +81,19 @@ export async function sendPublishReq(
     throw new PublishError('没有获取到token')
   }
   try {
-    const res = await fetch(url, {
+    // 请求本身设置超时；AbortError/TimeoutError 会按临时网络故障处理。
+    const response = await fetch(url, {
       method: 'POST',
       headers: { Zp_token: token },
-    }).then((r) => r.json())
+      signal: AbortSignal.timeout(10000),
+    })
+    // 只有服务端 5xx 才允许重试，4xx（包括 429）必须直接交给业务错误处理。
+    if (response.status >= 500 && response.status <= 599) {
+      const temporaryError = new Error(`HTTP ${response.status}`)
+      temporaryError.name = 'TemporaryServerError'
+      throw temporaryError
+    }
+    const res = await response.json()
 
     if (res.code !== 0) {
       // 只记录状态码和短错误消息，禁止把响应对象或 token 相关字段写入日志。
@@ -102,7 +118,8 @@ export async function sendPublishReq(
             headers: { Zp_token: token },
           })
 
-          return sendPublishReq(data, undefined, retries, { cid: 1 })
+          // 确认后只消耗一次有限重试额度，避免 120 限额响应导致无限递归。
+          return sendPublishReq(data, undefined, retries - 1, { cid: 1 })
         } catch (e) {
           logger.error('尝试确认投递限制失败', e)
           throw new PublishError(`投递限制确认失败]${content}`)
@@ -122,7 +139,19 @@ export async function sendPublishReq(
     if (e instanceof BossHelperError) {
       throw e
     }
-    return sendPublishReq(data, e?.message as string, retries - 1)
+    // 业务异常不重试；仅网络、超时和 5xx 这类安全临时故障允许退避重试。
+    const isTemporaryFailure =
+      e?.name === 'TemporaryServerError' ||
+      e?.name === 'AbortError' ||
+      e?.name === 'TimeoutError' ||
+      e instanceof TypeError
+    if (!isTemporaryFailure || retries <= 1) {
+      throw new PublishError(e?.message ?? errorMsg ?? '投递失败')
+    }
+    // 指数退避限制在 250/500/1000ms，避免失败时快速重复投递。
+    const retryIndex = 4 - retries
+    await new Promise((resolve) => setTimeout(resolve, 250 * 2 ** Math.max(0, retryIndex)))
+    return sendPublishReq(data, e?.message as string, retries - 1, _params)
   }
 }
 
