@@ -11,7 +11,7 @@ import { calculateFileMD5 } from '@/utils/file'
 import { logger } from '@/utils/logger'
 import { v2StorageKey } from '@/utils/namespace'
 
-import { BossZpBossData, BossZpDetailData } from './types'
+import type { BossZpBossData, BossZpDetailData } from './types'
 
 // const { userInfo } = useStore()
 const toast = useToast()

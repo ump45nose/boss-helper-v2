@@ -121,7 +121,7 @@ export class ProvideBackgroundAdapter implements Adapter<MessageMeta> {
     switch (message.meta.injector) {
       case 'content': {
         const tabs = await browser.tabs.query({ url: message.meta.url })
-        tabs.map((tab) => browser.tabs.sendMessage(tab.id!, message))
+        void tabs.map((tab) => browser.tabs.sendMessage(tab.id!, message))
         break
       }
       case 'popup': {
@@ -156,7 +156,7 @@ export class ProvideBackgroundAdapter implements Adapter<MessageMeta> {
 export class InjectBackgroundAdapter implements Adapter<MessageMeta> {
   constructor(public name: MessageMeta['injector'] = 'content') {}
   sendMessage: SendMessage<MessageMeta> = (message) => {
-    browser.runtime.sendMessage(browser.runtime.id, {
+    void browser.runtime.sendMessage(browser.runtime.id, {
       ...message,
       meta: { url: document.location.href, injector: this.name },
     } satisfies Message<MessageMeta>)

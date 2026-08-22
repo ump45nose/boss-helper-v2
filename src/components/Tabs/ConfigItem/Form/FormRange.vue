@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { type InputNumberProps } from '@nuxt/ui'
+import type { InputNumberProps } from '@nuxt/ui'
 
 const props = withDefaults(
   defineProps<{

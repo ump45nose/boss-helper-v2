@@ -7,7 +7,7 @@ import Address from './Address.vue'
 import Appearance from './Appearance.vue'
 import BatchPause from './BatchPause.vue'
 import CustomGreeting from './CustomGreeting.vue'
-import SalaryRangeComponent from './Form/SalaryRange.vue'
+import FormRange from './Form/FormRange.vue'
 import GreetingFallback from './GreetingFallback.vue'
 import ResumeImage from './ResumeImage.vue'
 import SalaryRange from './SalaryRange.vue'
@@ -35,7 +35,7 @@ const conf = useConf()
     v-model:enable="conf.formData.companySizeRange.enable"
     class="col-span-2 xl:col-span-1"
   >
-    <SalaryRangeComponent
+    <FormRange
       :controls="false"
       :value="conf.formData.companySizeRange.value"
       unit="人"

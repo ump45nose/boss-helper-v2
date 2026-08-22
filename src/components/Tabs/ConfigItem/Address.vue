@@ -23,7 +23,7 @@ async function amapGeocodeHandler() {
       title: '获取地址失败',
       color: 'error',
     })
-    logger.error(error)
+    logger.error('AmapGeocodeError', error)
   } finally {
     amapGeocodeLoading.value = false
   }

@@ -19,8 +19,10 @@ export class GeekChatClientManager {
       }
     } = await fetch(`https://www.zhipin.com/wapi/zppassport/get/wt`).then((res) => res.json())
     if (res.code !== 0) {
-      throw new Error(`获取 wt 失败: ${res.message}`)
+      logger.error(`消息发送ws: 获取 wt 失败: ${res.message}`)
+      throw new Error(`消息发送ws: 获取 wt 失败: ${res.message}`)
     }
+
     const wt = res.zpData.wt2
 
     const token = window._PAGE?.token

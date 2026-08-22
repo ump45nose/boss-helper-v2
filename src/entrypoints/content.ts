@@ -22,6 +22,8 @@ export default defineContentScript({
       () => new ContentCounter(injectBackgroundCounter(new InjectBackgroundAdapter())),
       {
         namespace: BOSS_HELPER_V2_CONTENT_NAMESPACE,
+        // 复用上游心跳超时保护，但保持 V2 独立消息命名空间。
+        heartbeatTimeout: 3000,
       },
     )
 

@@ -1,6 +1,7 @@
-import { inject, InjectionKey } from 'vue'
+import type { InjectionKey } from 'vue'
+import { inject } from 'vue'
 
-import { HelperContext } from './ctx'
+import type { HelperContext } from './ctx'
 export { HelperContext } from './ctx'
 export type { JobBaseData, JobData, LogData, Log } from './type'
 

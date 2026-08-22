@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { formInfoData, useConf } from '@/composables/conf'
 
-import SalaryRangeComponent from './Form/SalaryRange.vue'
+import FormRange from './Form/FormRange.vue'
 
 const conf = useConf()
 
@@ -40,7 +40,7 @@ function syncSalaryRange() {
     class="col-span-2 xl:col-span-1"
     ref="salaryRangeRef"
   >
-    <SalaryRangeComponent :value="conf.formData.salaryRange.value" unit="K" :show="false">
+    <FormRange :value="conf.formData.salaryRange.value" unit="K" :show="false">
       <UButton
         v-if="conf.configLevel.advanced"
         @click="
@@ -51,7 +51,7 @@ function syncSalaryRange() {
       >
         高级
       </UButton>
-    </SalaryRangeComponent>
+    </FormRange>
     <UPopover
       :reference="salaryRangeRef"
       :open="salaryRangeAdvanced"
@@ -70,7 +70,7 @@ function syncSalaryRange() {
             color="info"
             :close="false"
           />
-          <SalaryRangeComponent
+          <FormRange
             :value="conf.formData.salaryRange.value"
             unit="K"
             :show="true"
@@ -82,21 +82,21 @@ function syncSalaryRange() {
             :close="false"
           />
           <UButton @click="syncSalaryRange"> 同步 </UButton>
-          <SalaryRangeComponent
+          <FormRange
             :value="conf.formData.salaryRange.advancedValue.H"
             unit="元/时"
             :show="true"
             :step="5"
             :ui="{ base: 'max-w-20' }"
           />
-          <SalaryRangeComponent
+          <FormRange
             :value="conf.formData.salaryRange.advancedValue.D"
             unit="元/天"
             :show="true"
             :step="10"
             :ui="{ base: 'max-w-20' }"
           />
-          <SalaryRangeComponent
+          <FormRange
             :value="conf.formData.salaryRange.advancedValue.M"
             unit="元/月"
             :show="true"

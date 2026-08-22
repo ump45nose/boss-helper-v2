@@ -15,6 +15,7 @@ export interface Statistics {
     [key: string]: { [key: string]: number }
   }
 }
+
 const ConfigLevels = ['beginner', 'intermediate', 'advanced', 'expert'] as const
 export type ConfigLevel = (typeof ConfigLevels)[number]
 
@@ -41,8 +42,8 @@ export interface FormData {
   activityFilter: FormDataCheckbox
   friendStatus: FormDataCheckbox
   bossGoldMedalHr: FormDataCheckbox
-  sameCompanyFilter: FormDataCheckbox
-  sameHrFilter: FormDataCheckbox
+  sameCompanyFilter: FormDataCheckbox & { expire?: number }
+  sameHrFilter: FormDataCheckbox & { expire?: number }
   goldHunterFilter: FormDataCheckbox
   notification: FormDataCheckbox
   useCache: FormDataCheckbox

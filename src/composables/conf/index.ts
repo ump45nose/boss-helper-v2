@@ -64,11 +64,11 @@ const FROM_VERSION: [string, (from: Partial<FormData>) => Partial<FormData>][] =
     (from) => {
       if (from.salaryRange && typeof from.salaryRange.value === 'string') {
         const [min, max] = (from.salaryRange.value as string).split('-').map(Number)
-        from.salaryRange.value = [min, max, false]
+        from.salaryRange.value = [min ?? 0, max ?? 0, false]
       }
       if (from.companySizeRange && typeof from.companySizeRange.value === 'string') {
         const [min, max] = (from.companySizeRange.value as string).split('-').map(Number)
-        from.companySizeRange.value = [min, max, false]
+        from.companySizeRange.value = [min ?? 0, max ?? 0, false]
       }
       return from
     },
@@ -209,7 +209,7 @@ export const useConf = () => {
   async function formDataHandler(from: Partial<FormData>) {
     try {
       for (let i = FROM_VERSION.length - 1; i >= 0; i--) {
-        const [version, fn] = FROM_VERSION[i]
+        const [version, fn] = FROM_VERSION[i]!
         if ((from?.version ?? '20240401') >= version) {
           break
         }
@@ -466,7 +466,7 @@ export const useConf = () => {
     isLoading.value = true
     try {
       formDataPreset.value = value
-      counter.storageSet(formDataPresetKey, value)
+      await counter.storageSet(formDataPresetKey, value)
       await init()
     } catch (e) {
       toast.add({

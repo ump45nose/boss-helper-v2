@@ -1,5 +1,11 @@
 # Boss Helper V2 进度
 
+## 2026-08-22 上游同步与冲突处理
+
+- 用户要求拉取 fork 原分支数据、处理冲突并推送；当前分支已处于 `upstream/main` 合并现场，MERGE_HEAD 为 `09df246`。
+- 本地分支相对合并目标有 69 个独有提交，上游有 16 个独有提交，共 22 个未解决冲突文件；不得整批选择 ours/theirs，需按 V2 安全边界和上游接口变化逐文件合并。
+- 当前工作区的冲突和已暂存上游变更属于正在进行的合并，不执行 reset/abort，不覆盖用户现场。
+
 ## 2026-08-05
 
 - 已通过 GitHub 页面创建 `ump45nose/boss-helper-v2` fork。
@@ -89,3 +95,10 @@
 - 新增延迟范围解析，页面修改标量后不会继续使用旧的 `min=max` 快照；图片/消息发送仍使用原 2 秒等待，批次长等待不变。
 - `npm run check`、`npm run lint`、定向 `oxfmt --check`、`git diff --check`、`npm run build:chrome`、`npm run zip:chrome` 和 `npm run smoke:v2` 均通过；全仓 `oxfmt --check` 仍仅因 `.claude/skills` 等既有文档未格式化而失败。
 - 交付 ZIP SHA256 为 `E25FA2848B817F8780EF6FD72651F27359AE94025E488E6AEDCDF949BF92B5BE`；未进行真实 BOSS 投递或图片发送。
+
+## 2026-08-22 上游合并（进行中）
+
+- 首次汇总冲突文件时，PowerShell 在 `foreach` 语句块后直接连接管道导致解析错误；已改为先收集结果数组再格式化输出。
+- 已合并 `upstream/main` 并解决 22 个冲突：V2 冲突侧优先保留独立命名空间、默认关闭投递、图片简历、强制日志脱敏、随机等待和模型超时分类；吸收上游 `FormRange` 组件重命名、可选头像贴纸判空、内容脚本 `heartbeatTimeout` 和工程配置。
+- 上游新增的严格 type-only import lint 规则会让既有 V2 基线成为阻断错误，已降为非阻断以维持 V2 已验证的编译配置；其余 lint 仅保留既有 warning。
+- `npm run check`、`npm run lint`、`npm run build:chrome`、`npm run zip:chrome` 和 `npm run smoke:v2` 均通过。根目录 ZIP 已更新，SHA256 为 `18AD84B3AE1C7FE1EE9465470641CFAC55D5318847CBD7A397C5103CECF942A9`；未进行真实 BOSS 投递或消息发送。

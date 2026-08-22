@@ -247,9 +247,11 @@ export const defaultFormData: FormData = {
   },
   sameCompanyFilter: {
     value: false,
+    expire: 0,
   },
   sameHrFilter: {
     value: true,
+    expire: 0,
   },
   goldHunterFilter: {
     value: false,

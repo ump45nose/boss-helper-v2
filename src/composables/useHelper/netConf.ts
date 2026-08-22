@@ -1,5 +1,5 @@
-import { AlertProps } from '@nuxt/ui'
-import { Toast } from '@nuxt/ui/runtime/composables/useToast.js'
+import type { AlertProps } from '@nuxt/ui'
+import type { Toast } from '@nuxt/ui/runtime/composables/useToast.js'
 
 import { counter } from '@/message'
 import { v2StorageKey } from '@/utils/namespace'
@@ -67,7 +67,9 @@ async function netNotification(
 }
 
 export async function initNetConf() {
-  const response = await fetch('https://testingcf.jsdelivr.net/gh/Ocyss/boss-helper/net-conf.json')
+  const response = await fetch(
+    'https://testingcf.jsdelivr.net/gh/Ocyss/boss-helper@main/net-conf.json',
+  )
   const data: NetConf = await response.json()
   const now = Date.now()
   for (const item of data.notification) {

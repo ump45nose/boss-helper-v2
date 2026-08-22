@@ -1,4 +1,4 @@
-import { DeepPartial } from '@nuxt/ui'
+import type { DeepPartial } from '@nuxt/ui'
 
 export interface BossZpBossData {
   data: {
@@ -465,7 +465,7 @@ export interface BossZpDetailData {
     /** 标签图标URL，例如：null */
     tagIconUrl: any
     /** 头像贴纸URL，例如：null */
-    avatarStickerUrl: string
+    avatarStickerUrl?: string
   }
   /** 公司品牌信息 */
   brandComInfo: {

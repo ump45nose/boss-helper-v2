@@ -11,7 +11,7 @@ import { jsonClone } from '@/utils/deepmerge'
 import { logger } from '@/utils/logger'
 import { v2StorageKey } from '@/utils/namespace'
 
-import { JobStatus } from './useApplying/type'
+import type { JobStatus } from './useApplying/type'
 
 const toast = useToast()
 
