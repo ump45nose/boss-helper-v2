@@ -1,106 +1,139 @@
-> [!CAUTION]
-> 本项目仅供学习交流，禁止用于商业用途；V2 不保证规避平台风控。自动投递开关默认关闭，开启后会按当前筛选真实投递岗位并发送文本招呼语，请先确认配置和风险。
->
-> 使用该脚本有一定风险(如黑号,封号,权重降低等)，本项目不承担任何责任
+# BossHelper V2
 
-| Chrome | Edge | FireFox | Github |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/ogkmgjbagackkdlcibcailacnncgonbn?label=官方Chrome插件商店)](https://chrome.google.com/webstore/detail/ogkmgjbagackkdlcibcailacnncgonbn) | [![Edge Web Store](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fmicrosoftedge.microsoft.com%2Faddons%2Fgetproductdetailsbycrxid%2Fjcllnbjfeamhihjpfjlclhdnjmggbgal&query=version&prefix=v&label=Edge插件商店&color=EF7C3D)](https://microsoftedge.microsoft.com/addons/detail/jcllnbjfeamhihjpfjlclhdnjmggbgal) | [![Firefox](https://img.shields.io/amo/v/boss-helper?label=Mozilla插件商店)](https://addons.mozilla.org/zh-TW/firefox/addon/boss-helper/) | [![GitHub Release](https://img.shields.io/github/v/release/Ocyss/boss-helper)](https://github.com/Ocyss/boss-helper/releases/latest/) |
+> 面向 Boss直聘的求职辅助扩展：职位筛选、AI 招呼草稿、投递进度与人工确认工作流。
 
-> **国内**：V2 推荐使用本仓库构建的 ZIP 通过 Chrome“加载已解压的扩展程序”安装；官方基线只从 Ocyss 的官方商店或 GitHub Releases 获取。
+[![版本](https://img.shields.io/badge/version-0.6.0-14b8a6)](https://github.com/ump45nose/boss-helper-v2/releases)
+[![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285f4)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
+[![许可证](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
 
-## 项目介绍
+## 项目特点
 
-Boss直聘助手, 皆在减少投递简历的麻烦, 和提高投递简历的效率, 技术栈使用WXT + Vue3 + NuxtUI@4 + TailwindCSS@4, 开源在 Github 欢迎前来Pr
+BossHelper V2 把批量求职流程拆成可观察、可配置、可中止的步骤，重点保留用户对投递和沟通的最终控制权。
 
-## Boss Helper V2
+- **可组合的职位筛选**：按岗位、公司、薪资、规模、活跃度、已沟通状态、公司和招聘者等条件筛选；可定位并复用页面原生筛选控件。
+- **投递安全边界**：自动投递默认关闭。只有用户显式开启后才会执行；岗位投递成功后才写入投递状态和公司/HR 去重记录，失败不会被误标成已投递。
+- **可观测的批量流程**：提供进度、统计、日志和有界随机等待；仅在真实投递成功后计数，便于暂停、复核和继续处理。
+- **AI 仅作辅助**：支持候选人事实画像、职位筛选和招呼语草稿。模型异常、超时、空输出、过长输出或“需人工判断”时停止，兜底招呼语也须由用户单独开启。
+- **消息防重复**：聊天发送确认超时或失败时不自动重发；招呼语文本和图片分别在成功后写入状态，避免重连或重复任务造成重复触达。
+- **本地优先的图片简历**：PNG/JPEG/WebP 图片简历最大 2 MiB，默认关闭；二进制只保存在本机 IndexedDB，不进入 AI 请求、日志、配置导出或发布包。
+- **最小权限与脱敏日志**：仅申请 `storage` 与 `notifications`，不申请 `chrome.cookies`；站点权限限制为 `zhipin.com` 及子域，日志对密钥、Token、Cookie 和授权头强制脱敏。
+- **稳定的页面生命周期**：采用独立 DOM/消息命名空间，路由切换时释放监听、观察器和聊天连接，可与其他扩展更安全地共存。
 
-本仓库是 `ump45nose/boss-helper-v2` 的独立构建，版本 `0.6.0` 基于官方 `v0.5.1` 提交。V2 使用独立扩展身份、DOM 前缀、消息 namespace 和 `chrome.storage.local` key，可和官方扩展同时安装。交付和安装说明见 [INSTALL-WINDOWS.md](INSTALL-WINDOWS.md)，候选人画像示例见 [candidate-profile.example.json](candidate-profile.example.json)。
+## 界面预览
 
-V2 默认仍处于“筛选、AI 辅助和人工确认”模式：日志/统计可观测，等待采用保守随机抖动，AI 输出不合规时停止；岗位之间默认等待 15 秒（运行时约 12～18 秒），模型配置默认提示 `glm5.2`，模型请求默认超时 120 秒。回复监控只在用户主动开启后通知并形成待确认草稿。配置中的“自动投递（含招呼语）”默认关闭；只有用户明确开启后，筛选通过的岗位才会调用现有 BOSS 投递流程，并通过现有聊天通道发送文本或高级招呼语中的图片消息。可配置的“AI招呼失败时使用兜底语”默认关闭，模型未配置、超时、异常、空输出或返回“需人工判断”时才会使用，且 BOSS 消息已发布/确认超时后不会重发兜底语。可选的“招呼语后发送图片简历”同样默认关闭，需用户上传不超过 2 MiB 的 PNG/JPEG/WebP 图片后单独开启；启用 AI/自定义招呼时在其后发送，二者停用时在 BOSS 系统默认招呼语后发送，失败会停止后续岗位。图片仅保存于本机 IndexedDB，不进入 AI 请求、日志、配置导出或 ZIP。诊断配置提供“详细诊断日志（仍脱敏）”选项，用于记录阶段、耗时、超时配置和错误分类，但不会关闭密钥、Cookie、Prompt、模型响应或聊天全文的强制脱敏。该开关不实现自动回复监控或自动交换联系方式，也不提供代理轮换、指纹伪装、验证码绕过或随机点击/滚动等拟人化操作。
+所有下列素材均为 `1280×800` PNG，可直接用于 Chrome Web Store。建议商店上传前五张主界面截图（01、02、03、04、06）。
 
-> 本项目处于积极维护状态, 一直很忙所以拖了比较久才开源，抱歉了~
+| 外观与工作流配置                                               | 图片简历与 AI 兜底保护                                                   |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| ![外观配置](docs/store/screenshots/01-appearance-settings.png) | ![图片简历与兜底配置](docs/store/screenshots/02-resume-and-fallback.png) |
 
-## 相关链接
+| 多条件职位筛选                                           | 候选人画像与 AI 草稿                                                         |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| ![职位筛选](docs/store/screenshots/03-job-filtering.png) | ![候选人画像与 AI 草稿](docs/store/screenshots/04-ai-profile-and-drafts.png) |
 
-唯一交流群:
-微信麻烦, 飞书人数限制, 所以只开tg一个~
+| 原生筛选控件联动                                                 | 投递进度与职位列表                                                      |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| ![原生筛选控件联动](docs/store/screenshots/05-native-filter.png) | ![投递进度与职位列表](docs/store/screenshots/06-progress-dashboard.png) |
 
-<img alt="交流群" src="./docs/img/tg.png" height="200" />
+## 使用边界
 
-Github开源地址: <https://github.com/ocyss/boss-helper>
+- 自动投递、AI 失败兜底语、图片简历发送和回复监控均为**默认关闭**的独立功能。
+- AI 回复监控只生成待确认草稿和通知，不会自动填入或发送消息。
+- 扩展不提供验证码绕过、指纹伪装、代理轮换、随机点击/滚动或自动交换联系方式等规避平台规则的能力。
+- 使用前请核对筛选条件、投递数量、招呼语和 AI 服务配置，并遵守 Boss直聘及所使用 AI 服务的规则。
 
-飞书反馈问卷(匿名): <https://gai06vrtbc0.feishu.cn/share/base/form/shrcnmEq2fxH9hM44hqEnoeaj8g>
+## 快速开始
 
-> 每个提交都会给我发通知，我看见就会评论的形式回复 一般 1-2天
+### 从源码构建
 
-飞书问卷结果: <https://gai06vrtbc0.feishu.cn/share/base/view/shrcnrg8D0cbLQc89d7Jj7AZgMc>
+建议先克隆完整仓库和子模块，再安装依赖：
 
-## 项目预览
+```bash
+git clone https://github.com/ump45nose/boss-helper-v2.git
+cd boss-helper-v2
+git submodule update --init --recursive
+npm install --legacy-peer-deps
+```
 
-[![卡片状态](docs/img/shot_2024-04-14_23-08-03.png)](docs/img/shot_2024-04-14_23-08-03.png)
-[![账户配置](docs/img/shot_2024-04-14_23-09-05.png)](docs/img/shot_2024-04-14_23-09-05.png)
-[![统计界面](docs/img/shot_2024-04-02_22-25-25.png)](docs/img/shot_2024-04-02_22-25-25.png)
-[![配置界面](docs/img/shot_2024-04-02_22-26-54.png)](docs/img/shot_2024-04-02_22-26-54.png)
-[![日志界面](docs/img/shot_2024-04-02_22-32-25.png)](docs/img/shot_2024-04-02_22-32-25.png)
+构建 Chrome Manifest V3 版本：
 
-## TODO
+```bash
+npm run check
+npm run build:chrome
+```
 
-- [x] 优化UI去除广告
-- [x] 批量投递简历
-- 高级筛选
-  - [x] 薪资,公司名,工作名,人数,内容简单筛选
-  - 公司地址相关
-    > 使用高德api，需要自行申请，或者使用关键字筛选, 暂时只有驾车和步行
-    - [x] 驾车/步行距离
-    - [x] 驾车/步行时间
-  - [ ] 公司风险评控
-  - [x] AI筛选
-- 自动打招呼
-  - [x] 模板语言
-  - [x] 支持chatGPT
-- AI赋能
-  - [ ] 自动回复聊天
-  - [x] 多模型管理
-- 额外功能(有时间会写)
-  - [x] 自适应UI适配手机
-  - [ ] 黑名单
-  - [x] 多账号管理 (废弃, 改为多配置切换)
-  - [ ] 聊天阻止发送已读
-  - [ ] boss消息弹窗
+打开 `chrome://extensions`，开启“开发者模式”，选择“加载已解压的扩展程序”，并选取：
+
+```text
+output/chrome-mv3
+```
+
+### 打包上架
+
+```bash
+npm run zip:chrome
+npm run smoke:v2
+```
+
+Chrome 商店上传文件为：
+
+```text
+output/boss-helper-v2-0.6.0-chrome.zip
+```
+
+该 ZIP 用于商店上传；本地安装请加载解压后的 `output/chrome-mv3`，不要直接加载压缩包。上架字段、隐私披露和图标说明见 [docs/CHROME_WEB_STORE.md](docs/CHROME_WEB_STORE.md)。
+
+## 配置建议
+
+1. 在“筛选”页先定义岗位、薪资、地点、公司规模与去重策略。
+2. 在“配置”页设置投递上限、间隔和通知；确认无误后再显式开启自动投递。
+3. 在“AI”页导入或编辑 [候选人画像示例](candidate-profile.example.json)。画像仅保存于扩展本地配置，请勿填写 Cookie、账号密码或 API Key。
+4. 如启用自定义模型，请自行确认服务地址、密钥处理和数据发送范围；详情见 [隐私政策](PRIVACY.md)。
+
+## 常用命令
+
+| 命令                   | 用途                                               |
+| ---------------------- | -------------------------------------------------- |
+| `npm run dev`          | Chrome 开发模式                                    |
+| `npm run check`        | Vue/TypeScript 类型检查                            |
+| `npm run lint`         | 类型感知的静态检查                                 |
+| `npm run fmt:check`    | 格式检查                                           |
+| `npm run build:chrome` | 构建 Chrome MV3 解压目录                           |
+| `npm run zip:chrome`   | 构建并生成 Chrome 商店 ZIP                         |
+| `npm run smoke:v2`     | 校验产物、清单版本、无 `key`/`cookies` 和 ZIP 结构 |
+
+## 项目结构
+
+```text
+src/entrypoints/     扩展页面、BOSS 页面集成与后台工作流
+src/components/      Vue 界面与配置组件
+src/composables/     筛选、投递、配置、模型和状态逻辑
+src/message/         扩展内消息与请求代理
+src/utils/           命名空间、日志脱敏和通用工具
+public/              国际化资源与扩展图标
+docs/store/          商店图标与 1280×800 截图素材
+scripts/             构建产物冒烟校验
+```
+
+## 文档与反馈
+
+- 项目主页：<https://github.com/ump45nose/boss-helper-v2>
+- 问题反馈：<https://github.com/ump45nose/boss-helper-v2/issues>
+- Windows 安装说明：[INSTALL-WINDOWS.md](INSTALL-WINDOWS.md)
+- Chrome Web Store 上架资料：[docs/CHROME_WEB_STORE.md](docs/CHROME_WEB_STORE.md)
+- 隐私政策：[PRIVACY.md](PRIVACY.md)
 
 ## 参与贡献
 
-1. Fork 本仓库并克隆到本地。
-2. 在新分支上进行您的更改：`git checkout -b 您的分支名称`
-3. 提交更改：`git commit -am '描述您的更改'`
-4. 推送更改到您的 Fork：`git push origin 您的分支名称`
-5. 提交 Pull 请求。
+欢迎提交 Issue 和 Pull Request。修改后请至少执行：
 
-## 鸣谢
+```bash
+npm run check
+npm run build:chrome
+npm run zip:chrome
+npm run smoke:v2
+```
 
-- <https://github.com/yangfeng20/boss_batch_push>
-- <https://github.com/lisonge/vite-plugin-monkey>
-- <https://github.com/chatanywhere/GPT_API_free>
+## 许可证
 
-- <https://uiverse.io/>
-- <https://www.runoob.com/manual/mqtt/protocol/MQTT-3.1.1-CN.pdf>
-
-## 类似项目
-
-- <https://github.com/Frrrrrrrrank/auto_job__find__chatgpt__rpa>
-- <https://github.com/noBaldAaa/find-job>
-
-## 最后
-
-嗯...
-
-## Star 趋势
-
-<a href="https://star-history.dera.page/#ocyss/boss-helper&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=ocyss/boss-helper&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=ocyss/boss-helper&type=Date" />
-   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=ocyss/boss-helper&type=Date" />
- </picture>
-</a>
+本项目采用 [MIT License](LICENSE) 发布。

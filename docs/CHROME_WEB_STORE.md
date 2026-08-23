@@ -5,16 +5,16 @@
 
 ## 商店详情页
 
-| 字段 | 建议填写内容 |
-| --- | --- |
-| 名称（中文） | BossHelper V2 - AI 求职筛选助手 |
-| 名称（英文） | BossHelper V2 - AI Job Assistant |
-| 简短说明（中文） | 在 Boss直聘筛选职位、生成 AI 招呼草稿，并由你确认后完成求职操作。 |
+| 字段             | 建议填写内容                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| 名称（中文）     | BossHelper V2 - AI 求职筛选助手                                                            |
+| 名称（英文）     | BossHelper V2 - AI Job Assistant                                                           |
+| 简短说明（中文） | 在 Boss直聘筛选职位、生成 AI 招呼草稿，并由你确认后完成求职操作。                          |
 | 简短说明（英文） | Filter BOSS Zhipin jobs, generate AI greeting drafts, and act only with your confirmation. |
-| 类别 | Productivity |
-| 语言 | 简体中文；可额外提供英文详情页 |
-| 支持网址 | <https://github.com/ump45nose/boss-helper-v2/issues> |
-| 隐私政策网址 | 必须先将根目录 `PRIVACY.md` 部署为可公开访问的 HTTPS 页面，再填写该 URL。 |
+| 类别             | Productivity                                                                               |
+| 语言             | 简体中文；可额外提供英文详情页                                                             |
+| 支持网址         | <https://github.com/ump45nose/boss-helper-v2/issues>                                       |
+| 隐私政策网址     | 必须先将根目录 `PRIVACY.md` 部署为可公开访问的 HTTPS 页面，再填写该 URL。                  |
 
 ## 详细说明（中文）
 
@@ -36,10 +36,10 @@ BossHelper 是仅在 Boss直聘网站运行的求职辅助扩展，帮助用户�
 
 ### Permission justifications
 
-| 权限 | 填写内容 |
-| --- | --- |
-| `storage` | 保存用户的筛选规则、AI 配置、去重记录、统计和缓存，避免重复输入并支持本地处理。 |
-| `notifications` | 在用户离开当前标签页时显示投递或处理结果通知。 |
+| 权限                                 | 填写内容                                                                                            |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `storage`                            | 保存用户的筛选规则、AI 配置、去重记录、统计和缓存，避免重复输入并支持本地处理。                     |
+| `notifications`                      | 在用户离开当前标签页时显示投递或处理结果通知。                                                      |
 | `zhipin.com` 及子域 host permissions | 扩展仅在 Boss直聘页面和接口运行，用于读取页面职位信息、执行用户触发的投递/聊天操作，并加载扩展 UI。 |
 
 ### Data usage disclosure
@@ -58,7 +58,7 @@ BossHelper 是仅在 Boss直聘网站运行的求职辅助扩展，帮助用户�
 ## 图形资产清单
 
 - 商店图标：`public/icons/boss-helper-v2-128.png`，已随最终 Manifest 打包；原始图：`docs/store/boss-helper-v2-icon.png`。
-- 截图：选择 `docs/img/QQ20250223-165333.png`、`QQ20250223-165504.png`、`QQ20250223-165518.png`、`QQ20250223-165913.png`，均为 1280×800；
+- 截图：上传 `docs/store/screenshots/01-appearance-settings.png`、`02-resume-and-fallback.png`、`03-job-filtering.png`、`04-ai-profile-and-drafts.png`、`06-progress-dashboard.png`，均为 1280×800；
 - **仍需制作**：440×280 小宣传图（必需）；1400×560 Marquee 图（可选）。宣传图避免使用未经授权的 Boss直聘或 Google 商标。
 
 Chrome 官方要求至少一张 1280×800 截图，最多五张；小宣传图为 440×280。官方资料：
