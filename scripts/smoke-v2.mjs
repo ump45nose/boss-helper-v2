@@ -4,18 +4,18 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
-const output = resolve(root, '.output', 'chrome-mv3')
-const zip = resolve(root, 'boss-helper-v2-0.6.0.zip')
+// 发布校验从包元数据推导产物位置，避免版本升级后仍校验旧包。
+const packageJson = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'))
+const output = resolve(root, 'output', 'chrome-mv3')
+const zip = resolve(root, 'output', `boss-helper-v2-${packageJson.version}-chrome.zip`)
 
 assert.ok(existsSync(resolve(output, 'manifest.json')), '构建目录缺少 manifest.json')
 const manifest = JSON.parse(readFileSync(resolve(output, 'manifest.json'), 'utf8'))
 assert.equal(manifest.manifest_version, 3)
-assert.equal(manifest.version, '0.6.0')
-assert.ok(
-  typeof manifest.key === 'string' && manifest.key.length > 100,
-  'V2 必须使用独立 Manifest 公钥',
-)
+assert.equal(manifest.version, packageJson.version)
+assert.ok(!Object.hasOwn(manifest, 'key'), '商店上传包不得包含 Manifest key 字段')
 assert.ok(!manifest.permissions?.includes('cookies'), 'V2 不应申请 chrome.cookies 权限')
+assert.equal(manifest.icons?.['128'], 'icons/boss-helper-v2-128.png', '商店图标映射错误')
 assert.ok(
   manifest.content_scripts.some((item) => item.js?.some((file) => file.includes('chat-monitor'))),
 )

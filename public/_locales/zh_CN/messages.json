@@ -1,8 +1,8 @@
 {
   "extName": {
-    "message": "Boss Helper V2 - 直聘求职助手"
+    "message": "BossHelper V2 - AI 求职筛选助手"
   },
   "extDescription": {
-    "message": "Boss直聘助手 V2：可观测筛选、AI辅助和人工确认；不自动回复或发送简历。"
+    "message": "在 Boss直聘筛选职位、生成 AI 招呼草稿，并由你确认后完成求职操作。"
   }
 }

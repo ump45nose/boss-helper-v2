@@ -111,6 +111,15 @@ export default defineConfig({
     default_locale: 'zh_CN',
     name: '__MSG_extName__',
     description: '__MSG_extDescription__',
+    // 使用自有的版本化图标，避免覆盖旧资源，并确保商店包与扩展界面展示一致。
+    icons: {
+      16: 'icons/boss-helper-v2-16.png',
+      32: 'icons/boss-helper-v2-32.png',
+      48: 'icons/boss-helper-v2-48.png',
+      64: 'icons/boss-helper-v2-64.png',
+      128: 'icons/boss-helper-v2-128.png',
+      256: 'icons/boss-helper-v2-256.png',
+    },
     // 不申请 chrome.cookies；BOSS 页面会按官方页面会话完成必要请求，扩展不读取或导出 Cookie。
     permissions: ['storage', 'notifications'],
     web_accessible_resources: [

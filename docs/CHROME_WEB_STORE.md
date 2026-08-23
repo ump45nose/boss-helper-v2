@@ -1,24 +1,24 @@
 # Chrome Web Store 上架资料
 
-适用版本：`0.5.1`  
-上传包：`output/boss-helper-0.5.1-chrome.zip`
+适用版本：`0.6.0`
+上传包：`output/boss-helper-v2-0.6.0-chrome.zip`
 
 ## 商店详情页
 
 | 字段 | 建议填写内容 |
 | --- | --- |
-| 名称（中文） | Boss直聘 AI 求职助手 |
-| 名称（英文） | BossHelper – BOSS Job Assistant |
-| 简短说明（中文） | 在 Boss直聘上智能筛选职位、批量投递并生成个性化招呼语，减少重复操作，提高求职效率。 |
-| 简短说明（英文） | Filter jobs, streamline applications, and generate personalized greetings on BOSS Zhipin. |
+| 名称（中文） | BossHelper V2 - AI 求职筛选助手 |
+| 名称（英文） | BossHelper V2 - AI Job Assistant |
+| 简短说明（中文） | 在 Boss直聘筛选职位、生成 AI 招呼草稿，并由你确认后完成求职操作。 |
+| 简短说明（英文） | Filter BOSS Zhipin jobs, generate AI greeting drafts, and act only with your confirmation. |
 | 类别 | Productivity |
 | 语言 | 简体中文；可额外提供英文详情页 |
-| 支持网址 | 项目的 GitHub Issues 页面 |
+| 支持网址 | <https://github.com/ump45nose/boss-helper-v2/issues> |
 | 隐私政策网址 | 必须先将根目录 `PRIVACY.md` 部署为可公开访问的 HTTPS 页面，再填写该 URL。 |
 
 ## 详细说明（中文）
 
-BossHelper 是仅在 Boss直聘网站运行的求职辅助扩展，帮助用户减少重复操作并保留最终控制权。
+BossHelper 是仅在 Boss直聘网站运行的求职辅助扩展，帮助用户减少重复操作并保留最终控制权。项目主页与问题反馈：<https://github.com/ump45nose/boss-helper-v2>。
 
 - 按岗位名称、公司、薪资、规模、活跃度等规则筛选职位；
 - 支持批量投递，并按公司或招聘者避免重复沟通；
@@ -39,7 +39,6 @@ BossHelper 是仅在 Boss直聘网站运行的求职辅助扩展，帮助用户�
 | 权限 | 填写内容 |
 | --- | --- |
 | `storage` | 保存用户的筛选规则、AI 配置、去重记录、统计和缓存，避免重复输入并支持本地处理。 |
-| `cookies` | 读取当前 Boss直聘已登录会话所需的 Cookie，以便在用户已登录状态下执行职位查询、投递和聊天请求。不会将 Cookie 发送给扩展开发者。 |
 | `notifications` | 在用户离开当前标签页时显示投递或处理结果通知。 |
 | `zhipin.com` 及子域 host permissions | 扩展仅在 Boss直聘页面和接口运行，用于读取页面职位信息、执行用户触发的投递/聊天操作，并加载扩展 UI。 |
 
@@ -47,7 +46,7 @@ BossHelper 是仅在 Boss直聘网站运行的求职辅助扩展，帮助用户�
 
 请按实际启用功能选择数据类型，并确保与 `PRIVACY.md` 完全一致：
 
-- 勾选：认证信息（Boss直聘会话 Cookie/令牌）、网站内容与浏览活动（仅 Boss直聘）、用户内容/个人通信（用户启用招呼语或聊天时）。
+- 勾选：网站内容与浏览活动（仅 Boss直聘）、用户内容/个人通信（用户启用招呼语或聊天时）。扩展不申请 `cookies` 权限，也不读取或导出 Cookie。
 - 若用户配置 AI：勾选 API Key 等认证信息，以及为 AI 功能发送的职位、招聘者和招呼语文本。
 - 若用户启用地址筛选：披露地址或坐标会发送给高德地图。
 - 声明：不出售用户数据；不将数据用于广告、信用评估或与扩展单一用途无关的用途；仅为提供已披露功能而向 Boss直聘、用户选择的 AI 服务和可选高德地图发送必要数据。
@@ -58,7 +57,7 @@ BossHelper 是仅在 Boss直聘网站运行的求职辅助扩展，帮助用户�
 
 ## 图形资产清单
 
-- 商店图标：`public/icons/128.png`，已随最终 Manifest 打包；
+- 商店图标：`public/icons/boss-helper-v2-128.png`，已随最终 Manifest 打包；原始图：`docs/store/boss-helper-v2-icon.png`。
 - 截图：选择 `docs/img/QQ20250223-165333.png`、`QQ20250223-165504.png`、`QQ20250223-165518.png`、`QQ20250223-165913.png`，均为 1280×800；
 - **仍需制作**：440×280 小宣传图（必需）；1400×560 Marquee 图（可选）。宣传图避免使用未经授权的 Boss直聘或 Google 商标。
 

@@ -61,6 +61,7 @@ export class GeekChatClientManager {
    */
   async disconnect(): Promise<void> {
     if (!this.client) return
-    await new Promise<void>((resolve) => this.client.end(true, {}, resolve))
+    // MQTT 的关闭回调可携带错误参数；连接清理只等待回调完成，不将该参数传给 Promise.resolve。
+    await new Promise<void>((resolve) => this.client.end(true, {}, () => resolve()))
   }
 }
