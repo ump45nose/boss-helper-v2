@@ -21,19 +21,37 @@ BossHelper V2 把批量求职流程拆成可观察、可配置、可中止的步
 
 ## 界面预览
 
-所有下列素材均为 `1280×800` PNG，可直接用于 Chrome Web Store。建议商店上传前五张主界面截图（01、02、03、04、06）。
+从职位偏好到投递进度，所有关键状态都在一个界面中完成；自动化功能须由你主动开启，随时可以暂停或调整。
 
-| 外观与工作流配置                                               | 图片简历与 AI 兜底保护                                                   |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| ![外观配置](docs/store/screenshots/01-appearance-settings.png) | ![图片简历与兜底配置](docs/store/screenshots/02-resume-and-fallback.png) |
+### 先确定哪些职位值得投
 
-| 多条件职位筛选                                           | 候选人画像与 AI 草稿                                                         |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| ![职位筛选](docs/store/screenshots/03-job-filtering.png) | ![候选人画像与 AI 草稿](docs/store/screenshots/04-ai-profile-and-drafts.png) |
+按岗位、薪资、公司规模、活跃度、已沟通记录和招聘者设置条件，减少重复沟通与无效浏览。
 
-| 原生筛选控件联动                                                 | 投递进度与职位列表                                                      |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| ![原生筛选控件联动](docs/store/screenshots/05-native-filter.png) | ![投递进度与职位列表](docs/store/screenshots/06-progress-dashboard.png) |
+[![多条件职位筛选](docs/store/screenshots/03-job-filtering.png)](docs/store/screenshots/03-job-filtering.png)
+
+### 全程看得见的投递进度
+
+职位会按阶段展示处理状态、薪资、城市和原因。你可以在开始前复核筛选结果，并在处理中暂停或继续。
+
+[![投递进度与职位列表](docs/store/screenshots/06-progress-dashboard.png)](docs/store/screenshots/06-progress-dashboard.png)
+
+### 用真实经历生成 AI 草稿
+
+导入候选人事实画像后，AI 可辅助筛选和生成招呼语草稿。草稿需要你确认；信息不足、模型异常或结果不可靠时，流程会停止而不是替你发送。
+
+[![候选人画像与 AI 草稿](docs/store/screenshots/04-ai-profile-and-drafts.png)](docs/store/screenshots/04-ai-profile-and-drafts.png)
+
+### 图片简历与失败保护，由你决定是否开启
+
+图片简历、AI 失败兜底语均为独立开关且默认关闭。图片只保存在本机扩展存储中，不会进入 AI 请求、日志或配置导出。
+
+[![图片简历与兜底配置](docs/store/screenshots/02-resume-and-fallback.png)](docs/store/screenshots/02-resume-and-fallback.png)
+
+### 让工作流适应你的习惯
+
+可调整界面显示、地址、间隔、通知和处理上限；配置会自动保存，帮助你在不同求职节奏下保持可控操作。
+
+[![外观与工作流配置](docs/store/screenshots/01-appearance-settings.png)](docs/store/screenshots/01-appearance-settings.png)
 
 ## 使用边界
 
