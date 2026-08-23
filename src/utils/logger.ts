@@ -73,6 +73,13 @@ const secretValuePattern = /(bearer\s+|sk-[a-z0-9]|key[-_]|token[-_])/iu
 /** 统一脱敏日志参数，避免令牌、密钥和完整模型/聊天内容进入控制台。 */
 function sanitizeLogValue(value: unknown, depth = 0): unknown {
   if (depth > 3) return '[已省略]'
+  // Error 的 message/stack 不可枚举；先转换为安全摘要，避免控制台显示成 [object Object]。
+  if (value instanceof Error) {
+    return {
+      name: value.name,
+      message: sanitizeLogValue(value.message, depth + 1),
+    }
+  }
   if (typeof value === 'string') {
     if (secretValuePattern.test(value)) return '[已隐藏凭据]'
     return value.length > 800 ? `${value.slice(0, 800)}…` : value

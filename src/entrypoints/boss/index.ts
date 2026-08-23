@@ -466,7 +466,8 @@ export class BossHelperCtx extends HelperContext<BossHelperCtx, BoosJobData, {}>
           this.geek = chat
         } catch (error) {
           // 聊天是附加能力，连接失败不能阻断岗位筛选和投递。
-          logger.error('聊天服务连接失败，已降级为仅投递模式', error)
+          const reason = error instanceof Error ? error.message : String(error)
+          logger.warn('聊天服务不可用，已降级为仅投递模式；刷新页面或重新登录后会重试', reason)
         }
       }
       this.appearanceWatchStop = watch(

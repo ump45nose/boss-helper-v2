@@ -77,6 +77,10 @@ const fallbackSource = readFileSync(
 )
 const confSource = readFileSync(resolve(root, 'src', 'composables', 'conf', 'index.ts'), 'utf8')
 const backgroundSource = readFileSync(resolve(root, 'src', 'message', 'background.ts'), 'utf8')
+const chatSource = readFileSync(
+  resolve(root, 'src', 'entrypoints', 'boss', 'chat', 'index.ts'),
+  'utf8',
+)
 assert.ok(applyingSource.includes('autoDelivery.value'), '招呼任务缺少自动投递开关保护')
 assert.ok(bossSource.includes("publish('chat'"), '自动投递缺少 BOSS 聊天发送通道')
 assert.ok(
@@ -150,6 +154,9 @@ assert.ok(
   '配置导出不得携带图片引用',
 )
 assert.ok(backgroundSource.includes('removeImage'), 'background 缺少图片清理能力')
+assert.ok(chatSource.includes('response.ok'), '聊天会话请求缺少 HTTP 状态校验')
+assert.ok(!chatSource.includes('logger.error'), '聊天会话失败不应直接写入扩展错误页')
+assert.ok(bossSource.includes('logger.warn'), '聊天降级应记录为警告而非错误')
 
 const profile = JSON.parse(readFileSync(resolve(root, 'candidate-profile.example.json'), 'utf8'))
 for (const key of [

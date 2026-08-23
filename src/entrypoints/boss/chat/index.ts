@@ -4,31 +4,43 @@ import { getUuid } from '@/utils'
 
 import { ProtoBufferMessage } from './geek-chat-core'
 
+interface WtResponse {
+  code?: number
+  message?: string
+  zpData?: {
+    wt2?: string
+  }
+}
+
 export class GeekChatClientManager {
   client!: mqtt.MqttClient
   msgBuilder!: ProtoBufferMessage
 
   constructor() {}
 
-  async connect() {
-    const res: {
-      code: 0
-      message: 'Success'
-      zpData: {
-        wt2: string
-      }
-    } = await fetch(`https://www.zhipin.com/wapi/zppassport/get/wt`).then((res) => res.json())
-    if (res.code !== 0) {
-      logger.error(`消息发送ws: 获取 wt 失败: ${res.message}`)
-      throw new Error(`消息发送ws: 获取 wt 失败: ${res.message}`)
+  /**
+   * 初始化 BOSS 聊天连接；失败时抛出可恢复原因，交由页面层降级而不影响职位投递。
+   */
+  async connect(): Promise<void> {
+    const response = await fetch('https://www.zhipin.com/wapi/zppassport/get/wt')
+    if (!response.ok) {
+      throw new Error(`获取聊天会话失败：服务返回 HTTP ${response.status}`)
     }
 
-    const wt = res.zpData.wt2
+    const res = (await response.json()) as WtResponse
+    if (res.code !== 0) {
+      throw new Error(`获取聊天会话失败：${res.message || '当前登录状态不可用'}`)
+    }
+
+    const wt = res.zpData?.wt2
+    if (!wt) {
+      throw new Error('获取聊天会话失败：服务未返回 wt 参数')
+    }
 
     const token = window._PAGE?.token
 
     if (!token) {
-      throw new Error('未获取到当前用户 token')
+      throw new Error('获取聊天会话失败：未获取到当前用户 token')
     }
 
     this.client = mqtt.connect(`wss://ws6.zhipin.com/chatws`, {
