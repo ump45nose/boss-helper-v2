@@ -1,7 +1,7 @@
 {
   "name": "boss-helper-v2",
   "displayName": "BossHelper V2",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "description": "Boss直聘助手 V2：可观测筛选、AI 辅助和人工确认工作流",
   "type": "module",
