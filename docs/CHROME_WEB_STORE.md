@@ -1,7 +1,7 @@
 # Chrome Web Store 上架资料
 
-适用版本：`0.6.0`
-上传包：`output/boss-helper-v2-0.6.0-chrome.zip`
+适用版本：`0.6.1`
+上传包：`output/boss-helper-v2-0.6.1-chrome.zip`
 
 ## 商店详情页
 

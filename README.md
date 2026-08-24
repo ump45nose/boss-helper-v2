@@ -2,9 +2,16 @@
 
 > 面向 Boss直聘的求职辅助扩展：职位筛选、AI 招呼草稿、投递进度与人工确认工作流。
 
-[![版本](https://img.shields.io/badge/version-0.6.0-14b8a6)](https://github.com/ump45nose/boss-helper-v2/releases)
+[![版本](https://img.shields.io/badge/version-0.6.1-14b8a6)](https://github.com/ump45nose/boss-helper-v2/releases)
 [![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285f4)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![许可证](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
+
+## 安装
+
+- **Chrome 商店安装（推荐）**：[BossHelper V2 - AI 求职筛选助手](https://chromewebstore.google.com/detail/bosshelper-v2-ai-%E6%B1%82%E8%81%8C%E7%AD%9B%E9%80%89%E5%8A%A9%E6%89%8B/fnkjhlhdebkepcdnhaddcaokcedhmbpa?hl=zh-CN)
+- **手动安装 ZIP**：[下载 BossHelper V2 v0.6.1](https://github.com/ump45nose/boss-helper-v2/releases/download/v0.6.1/boss-helper-v2-0.6.1-chrome.zip)。下载后解压，打开 `chrome://extensions`，开启“开发者模式”，选择“加载已解压的扩展程序”，并选取解压后的目录。
+
+> ZIP 是给手动安装和离线分发使用的扩展包；不要将它当作普通 Chrome 压缩扩展直接双击安装。
 
 ## 项目特点
 
@@ -96,7 +103,7 @@ npm run smoke:v2
 Chrome 商店上传文件为：
 
 ```text
-output/boss-helper-v2-0.6.0-chrome.zip
+output/boss-helper-v2-0.6.1-chrome.zip
 ```
 
 该 ZIP 用于商店上传；本地安装请加载解压后的 `output/chrome-mv3`，不要直接加载压缩包。上架字段、隐私披露和图标说明见 [docs/CHROME_WEB_STORE.md](docs/CHROME_WEB_STORE.md)。
