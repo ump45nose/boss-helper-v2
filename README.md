@@ -1,10 +1,27 @@
-# BossHelper V2
+# BossHelper V2：可控、最小权限的 AI 求职助手
 
-> 面向 Boss直聘的求职辅助扩展：职位筛选、AI 招呼草稿、投递进度与人工确认工作流。
+> 面向 Boss直聘的求职辅助扩展：职位筛选、AI 招呼草稿、投递进度与人工确认工作流。自动化默认关闭，关键动作由你决定。
 
 [![版本](https://img.shields.io/badge/version-0.6.1-14b8a6)](https://github.com/ump45nose/boss-helper-v2/releases)
 [![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285f4)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![许可证](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
+
+> **来源与独立维护声明**：BossHelper V2 基于 [Ocyss/boss-helper](https://github.com/Ocyss/boss-helper) 的 MIT 许可代码演进，保留原版权声明与许可证，并感谢上游项目的开源贡献。V2 是独立维护、独立发布的项目，不是上游官方发行版；其安全边界和工作流改动已超出单个上游 PR 的维护范围。
+
+## 为什么有 V2？
+
+上游项目提供了成熟的求职效率工具基础；V2 的重点不是把投递做得更激进，而是把每一步做得更可控、更容易复核。下表描述的是本项目明确承诺的行为，不对上游当前版本的实现作推断。
+
+| 维度       | 上游项目的基础定位                                        | BossHelper V2 的独立取向                                                                    |
+| ---------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| 核心目标   | 求职效率与功能覆盖                                        | 合规、可控、人工确认优先                                                                    |
+| 自动化策略 | 以原项目版本与说明为准                                    | 自动投递、图片简历、AI 兜底语、回复监控均默认关闭，须分别显式开启                           |
+| 浏览器权限 | 以原项目清单为准                                          | 仅申请 `storage`、`notifications` 与 Boss直聘站点权限；不申请 `chrome.cookies`              |
+| AI 的职责  | 以原项目版本与说明为准                                    | 仅生成筛选建议和草稿；模型异常、超时、空输出或需人工判断时停止，不替用户发送                |
+| 数据与日志 | 以原项目版本与说明为准                                    | 图片简历仅本机 IndexedDB 保存；密钥、Token、Cookie、授权头在日志中强制脱敏                  |
+| 发布与维护 | [Ocyss/boss-helper](https://github.com/Ocyss/boss-helper) | [ump45nose/boss-helper-v2](https://github.com/ump45nose/boss-helper-v2)，独立版本与 Release |
+
+这不是对上游的替代性评价。V2 保留来源归属，并选择一条更适合谨慎求职者的产品路线。
 
 ## 安装
 
@@ -25,6 +42,12 @@ BossHelper V2 把批量求职流程拆成可观察、可配置、可中止的步
 - **本地优先的图片简历**：PNG/JPEG/WebP 图片简历最大 2 MiB，默认关闭；二进制只保存在本机 IndexedDB，不进入 AI 请求、日志、配置导出或发布包。
 - **最小权限与脱敏日志**：仅申请 `storage` 与 `notifications`，不申请 `chrome.cookies`；站点权限限制为 `zhipin.com` 及子域，日志对密钥、Token、Cookie 和授权头强制脱敏。
 - **稳定的页面生命周期**：采用独立 DOM/消息命名空间，路由切换时释放监听、观察器和聊天连接，可与其他扩展更安全地共存。
+
+## 一分钟看懂 V2
+
+真实界面演示：先筛选，再配置边界，必要时生成 AI 草稿，最后由用户复核进度。演示中的页面均来自扩展实际界面，不包含自动发送或绕过平台规则的操作。
+
+![BossHelper V2 可控求职工作流演示](docs/demo/boss-helper-v2-workflow.gif)
 
 ## 界面预览
 
@@ -161,4 +184,4 @@ npm run smoke:v2
 
 ## 许可证
 
-本项目采用 [MIT License](LICENSE) 发布。
+本项目采用 [MIT License](LICENSE) 发布；其中包含并保留上游 [Ocyss/boss-helper](https://github.com/Ocyss/boss-helper) 的版权声明与许可文本。感谢上游开源贡献。
